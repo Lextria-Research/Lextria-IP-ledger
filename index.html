@@ -2237,51 +2237,77 @@
   }
   // Internal field keys are stable across ipTypes; aliases cover every label variant used by any
   // ipType's column headers (plus a few common synonyms) so an uploaded file matches regardless of
+  function normalizeKey(str) {
+    return (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  }
+
+  // Internal field keys are stable across ipTypes; aliases cover every label variant used by any
+  // ipType's column headers (plus a few common synonyms) so an uploaded file matches regardless of
   // which ipType's template it started from.
   var IMPORT_ALIASES = {
-    'code': ['code'], 'clientname': ['client name', 'client', 'applicant'],
-    'brand': ['brand', 'trademark', 'mark', 'title of work', 'design title'],
-    'marktype': ['mark type', 'type', 'article'],
-    'class': ['class', 'nice class', 'category of work', 'locarno class'],
-    'applicationno': ['application no', 'application no.', 'application number', 'app no', 'diary number'],
-    'status': ['status'],
-    'description': ['description', 'goods & services', 'goods and services', 'description of work', 'description of design'],
-    'nextstep': ['next step', 'action', 'notes'],
-    'nextdeadline': ['next deadline (dd/mm/yyyy)', 'next deadline', 'deadline'],
-    'renewaldate': ['renewal date (dd/mm/yyyy)', 'renewal date', 'valid upto']
+    'code': ['code', 'matter code', 'id'],
+    'clientname': ['client name', 'client', 'client / applicant', 'applicant name', 'applicant'],
+    'brand': ['brand / mark', 'brand/mark', 'brand', 'trademark', 'mark', 'title of work', 'title', 'work title', 'design title', 'title of design'],
+    'marktype': ['mark type', 'marktype', 'type', 'article', 'device'],
+    'class': ['class', 'nice class', 'category of work', 'category', 'locarno class'],
+    'applicationno': ['application no.', 'application no', 'application number', 'app no.', 'app no', 'appno', 'diary number', 'diary no.', 'diary no'],
+    'status': ['status', 'matter status', 'current status'],
+    'description': ['goods & services', 'goods and services', 'goods/services', 'description of work', 'description of design', 'description', 'desc'],
+    'nextstep': ['next step', 'next action', 'action', 'nextstep', 'step', 'notes'],
+    'nextdeadline': ['next deadline (dd/mm/yyyy)', 'next deadline', 'deadline (dd/mm/yyyy)', 'deadline', 'due date', 'action date'],
+    'renewaldate': ['renewal date (dd/mm/yyyy)', 'renewal date', 'renewal (dd/mm/yyyy)', 'renewal', 'valid upto', 'valid up to', 'expiry date']
   };
+
   function getField(row, key) {
     var candidates = IMPORT_ALIASES[key] || [key];
     var normEntries = {};
-    Object.keys(row).forEach(function (k) { normEntries[k.trim().toLowerCase()] = row[k]; });
+    var strictNorm = {};
+    Object.keys(row).forEach(function (k) {
+      var val = row[k];
+      normEntries[k.trim().toLowerCase()] = val;
+      strictNorm[normalizeKey(k)] = val;
+    });
+
     for (var i = 0; i < candidates.length; i++) {
-      if (normEntries[candidates[i]] !== undefined && normEntries[candidates[i]] !== '') return String(normEntries[candidates[i]]).trim();
+      var c = candidates[i].toLowerCase();
+      if (normEntries[c] !== undefined && normEntries[c] !== '') return String(normEntries[c]).trim();
+      var sc = normalizeKey(candidates[i]);
+      if (strictNorm[sc] !== undefined && strictNorm[sc] !== '') return String(strictNorm[sc]).trim();
     }
     return '';
   }
+
   // Applicant N / Author N columns are open-ended (N depends on how many are on record), so rather
   // than a static per-index alias table they're matched by building the expected header directly —
   // "applicant N address", "applicant N nationality", "applicant N country of residence",
   // "applicant N gender" etc — with a couple of reasonable synonyms per field.
   function getFieldVariants(row, candidates) {
     var normEntries = {};
-    Object.keys(row).forEach(function (k) { normEntries[k.trim().toLowerCase()] = row[k]; });
+    var strictNorm = {};
+    Object.keys(row).forEach(function (k) {
+      var val = row[k];
+      normEntries[k.trim().toLowerCase()] = val;
+      strictNorm[normalizeKey(k)] = val;
+    });
     for (var i = 0; i < candidates.length; i++) {
       var c = candidates[i].toLowerCase();
       if (normEntries[c] !== undefined && normEntries[c] !== '') return String(normEntries[c]).trim();
+      var sc = normalizeKey(candidates[i]);
+      if (strictNorm[sc] !== undefined && strictNorm[sc] !== '') return String(strictNorm[sc]).trim();
     }
     return '';
   }
+
   function getPersonField(row, kind, n, field) {
     var base = kind + ' ' + n + ' ';
     var map = {
-      name: [base + 'Name'],
-      entityType: [base + 'Entity Type'],
-      authorized: [base + 'Authorized Person', base + 'Authorised Person'],
-      address: [base + 'Address'],
+      name: [base + 'Name', base + 'Full Name', kind + ' Name ' + n],
+      entityType: [base + 'Entity Type', base + 'Type', base + 'Entity'],
+      authorized: [base + 'Authorized Person', base + 'Authorised Person', base + 'Authorized Signatory', base + 'Signatory'],
+      address: [base + 'Address', base + 'Full Address'],
       nationality: [base + 'Nationality'],
-      country: [base + 'Country of Residence', base + 'Country'],
-      gender: [base + 'Gender']
+      country: [base + 'Country of Residence', base + 'Country', base + 'Residence'],
+      gender: [base + 'Gender', base + 'Sex']
     };
     return getFieldVariants(row, map[field] || [base + field]);
   }
@@ -2489,24 +2515,33 @@
   }
 
   function parseDateLoose(text) {
-    var m = text.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
-    if (m) {
-      var dd = +m[1], mm = +m[2], yy = +m[3];
+    if (!text) return null;
+    var s = String(text).trim();
+    var mYmd = s.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})$/);
+    if (mYmd) {
+      var y = +mYmd[1], m = +mYmd[2], d = +mYmd[3];
+      if (m >= 1 && m <= 12 && d >= 1 && d <= 31) {
+        return y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+      }
+    }
+    var mDmy = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+    if (mDmy) {
+      var dd = +mDmy[1], mm = +mDmy[2], yy = +mDmy[3];
       if (yy < 100) yy += 2000;
       if (mm >= 1 && mm <= 12 && dd >= 1 && dd <= 31) {
         return yy + '-' + String(mm).padStart(2, '0') + '-' + String(dd).padStart(2, '0');
       }
     }
     var months = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
-    m = text.match(/(\d{1,2})(?:st|nd|rd|th)?\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?,?\s+(\d{4})/i);
-    if (m) {
-      var monIdx = months.findIndex(function (mo) { return mo.indexOf(m[2].toLowerCase()) === 0; });
-      if (monIdx >= 0) return m[3] + '-' + String(monIdx + 1).padStart(2, '0') + '-' + String(+m[1]).padStart(2, '0');
+    var m1 = s.match(/(\d{1,2})(?:st|nd|rd|th)?\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?,?\s+(\d{4})/i);
+    if (m1) {
+      var monIdx = months.findIndex(function (mo) { return mo.indexOf(m1[2].toLowerCase()) === 0; });
+      if (monIdx >= 0) return m1[3] + '-' + String(monIdx + 1).padStart(2, '0') + '-' + String(+m1[1]).padStart(2, '0');
     }
-    m = text.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4})/i);
-    if (m) {
-      var monIdx2 = months.findIndex(function (mo) { return mo.indexOf(m[1].toLowerCase()) === 0; });
-      if (monIdx2 >= 0) return m[3] + '-' + String(monIdx2 + 1).padStart(2, '0') + '-' + String(+m[2]).padStart(2, '0');
+    var m2 = s.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4})/i);
+    if (m2) {
+      var monIdx2 = months.findIndex(function (mo) { return mo.indexOf(m2[1].toLowerCase()) === 0; });
+      if (monIdx2 >= 0) return m2[3] + '-' + String(monIdx2 + 1).padStart(2, '0') + '-' + String(+m2[2]).padStart(2, '0');
     }
     return null;
   }
