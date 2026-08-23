@@ -846,7 +846,7 @@
 
   var view = {
     mode: 'ledger',
-    clientId: (state.clients[0] && state.clients[0].id) || null,
+    clientId: '__all__',
     ipType: 'trademark',
     search: '',
     searchField: 'all',
@@ -858,9 +858,7 @@
     ledgerPage: 1,
     logPage: 1,
     deadlinesPage: 1,
-    // Independent from view.clientId (used by the Ledger tab) so a user can browse one client's
-    // dashboard while a different client stays selected in the Ledger tab.
-    dashboardClientId: (state.clients[0] && state.clients[0].id) || null
+    dashboardClientId: '__all__'
   };
 
   var modalState = null;
@@ -908,12 +906,24 @@
     if (months >= 1) return 'in ' + months + 'mo';
     return 'in ' + days + 'd';
   }
-  function nextRecordId() {
-    var seq = state.nextRecordSeq || (state.records.length + 1);
+  function nextRecordId(st) {
+    var s = st || state;
+    var max = 0;
+    (s.records || []).forEach(function (r) {
+      var m = (r.id || '').match(/^t-(\d+)$/);
+      if (m) max = Math.max(max, parseInt(m[1], 10));
+    });
+    var seq = Math.max(max + 1, s.nextRecordSeq || 1);
     return 't-' + String(seq).padStart(3, '0');
   }
-  function nextClientId() {
-    var seq = state.nextClientSeq || (state.clients.length + 1);
+  function nextClientId(st) {
+    var s = st || state;
+    var max = 0;
+    (s.clients || []).forEach(function (c) {
+      var m = (c.id || '').match(/^c-(\d+)$/);
+      if (m) max = Math.max(max, parseInt(m[1], 10));
+    });
+    var seq = Math.max(max + 1, s.nextClientSeq || 1);
     return 'c-' + String(seq);
   }
   function toast(msg, tone) {
@@ -1190,7 +1200,7 @@
   /* ===================== Derived data ===================== */
   function recordsFor(clientId, ipType) {
     return state.records.filter(function (r) {
-      return r.ipType === ipType && (clientId === '__all__' || r.clientId === clientId);
+      return r.ipType === ipType && (!clientId || clientId === '__all__' || r.clientId === clientId);
     });
   }
   function computeDeadlines(clientFilter, ipTypeFilter) {
@@ -1271,8 +1281,8 @@
 
   /* ===================== Client Dashboard view ===================== */
   function renderClientDashboardView() {
-    if ((!view.dashboardClientId || !clientById(view.dashboardClientId)) && state.clients.length) {
-      view.dashboardClientId = state.clients[0].id;
+    if (view.dashboardClientId && view.dashboardClientId !== '__all__' && !clientById(view.dashboardClientId)) {
+      view.dashboardClientId = '__all__';
     }
     var cid = view.dashboardClientId || '__all__';
     var html = '<div class="toolbar" style="margin-bottom:18px;"><div class="toolbar-left">';
@@ -1299,13 +1309,17 @@
 
   /* ===================== Ledger view ===================== */
   function renderLedgerView() {
+    if (view.clientId && view.clientId !== '__all__' && !clientById(view.clientId)) {
+      view.clientId = '__all__';
+    }
+    var cid = view.clientId || '__all__';
     var cfg = ipConfig(view.ipType);
     var html = '<div class="toolbar">';
     html += '<div class="toolbar-left">';
     html += '<select class="client-select" data-action="change-client">';
-    html += '<option value="__all__"' + (view.clientId === '__all__' ? ' selected' : '') + '>All ' + cfg.label + 's</option>';
+    html += '<option value="__all__"' + (cid === '__all__' ? ' selected' : '') + '>All ' + cfg.label + 's</option>';
     state.clients.forEach(function (c) {
-      html += '<option value="' + escapeHtml(c.id) + '"' + (c.id === view.clientId ? ' selected' : '') + '>' + escapeHtml(c.name) + '</option>';
+      html += '<option value="' + escapeHtml(c.id) + '"' + (c.id === cid ? ' selected' : '') + '>' + escapeHtml(c.name) + '</option>';
     });
     html += '<option value="__new__">+ Add client&hellip;</option>';
     html += '</select>';
@@ -1323,7 +1337,7 @@
     }
     html += '</div></div>';
 
-    var clientRecords = recordsFor(view.clientId, view.ipType);
+    var clientRecords = recordsFor(cid, view.ipType);
     html += renderStats(clientRecords, view.ipType);
     html += '<div class="workspace">';
     html += renderLedgerTable(clientRecords, view.ipType);
@@ -2129,10 +2143,10 @@
     var clientId = d.clientId;
     var clientName = null;
     if (clientId === '__new__') {
-      clientId = nextClientId();
+      clientId = nextClientId(newState);
       clientName = d.newClientName.trim();
       newState.clients.push({ id: clientId, name: clientName });
-      newState.nextClientSeq = (state.nextClientSeq || state.clients.length + 1) + 1;
+      newState.nextClientSeq = (newState.nextClientSeq || newState.clients.length + 1) + 1;
     } else {
       var cl = clientById(clientId);
       clientName = cl ? cl.name : clientId;
@@ -2140,7 +2154,7 @@
 
     var isEdit = modalState.mode === 'edit';
     var record = {
-      id: d.id || nextRecordId(),
+      id: d.id || nextRecordId(newState),
       clientId: clientId,
       ipType: d.ipType || view.ipType,
       code: (d.code || '').trim(),
@@ -2689,13 +2703,13 @@
       var clientId;
       if (client) { clientId = client.id; }
       else {
-        clientId = nextClientId();
+        clientId = nextClientId(newState);
         newState.clients.push({ id: clientId, name: d.clientName });
         newState.nextClientSeq = (newState.nextClientSeq || newState.clients.length + 1) + 1;
         createdClients.push(d.clientName);
       }
       var record = {
-        id: nextRecordId(), clientId: clientId, ipType: ipType, code: d.code, brand: d.brand,
+        id: nextRecordId(newState), clientId: clientId, ipType: ipType, code: d.code, brand: d.brand,
         cls: d.cls, appno: d.appno, markType: d.markType, status: d.status, desc: d.desc, action: d.action,
         actionDate: d.actionDate, renewDate: d.renewDate, applicants: d.applicants, authors: d.authors || [], logoUrl: ''
       };
@@ -2708,7 +2722,12 @@
       (skipped ? ' (' + skipped + ' row' + (skipped === 1 ? '' : 's') + ' skipped)' : '') +
       (createdClients.length ? ' — new client' + (createdClients.length === 1 ? '' : 's') + ': ' + createdClients.join(', ') : '');
     pushLog(newState, summary);
+    view.ipType = ipType;
+    view.clientId = '__all__';
+    view.dashboardClientId = '__all__';
     view.ledgerPage = 1;
+    view.statusFilter = {};
+    view.search = '';
     closeModal();
     persist(newState, valid.length + ' matter' + (valid.length === 1 ? '' : 's') + ' imported');
   }
