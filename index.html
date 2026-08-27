@@ -557,21 +557,21 @@
       label: 'Trademark', addLabel: 'Add trademark',
       brandLabel: 'Brand / mark', clsLabel: 'Class', clsMode: 'text', clsOptions: null, clsPlaceholder: 'e.g. 42',
       appnoLabel: 'Application no.', markTypeLabel: 'Mark type', markTypeMode: 'select', markTypeOptions: MARK_TYPES,
-      descLabel: 'Goods & services', hasRenewal: true, renewYears: 10, hasAuthors: false, hasLogo: true,
+      descLabel: 'Goods & services', hasRenewal: true, renewYears: 10, hasAuthors: false, hasContributors: false, hasLogo: true,
       searchPlaceholder: 'Search brand, class, application no., goods & services…'
     },
     copyright: {
       label: 'Copyright', addLabel: 'Add copyright',
       brandLabel: 'Title of Work', clsLabel: 'Category of Work', clsMode: 'select', clsOptions: COPYRIGHT_CATEGORIES,
       appnoLabel: 'Diary Number', markTypeLabel: null, markTypeMode: 'hidden', markTypeOptions: null,
-      descLabel: 'Description of Work', hasRenewal: false, renewYears: null, hasAuthors: true, hasLogo: false,
+      descLabel: 'Description of Work', hasRenewal: false, renewYears: null, hasAuthors: true, hasContributors: false, hasLogo: false,
       searchPlaceholder: 'Search title of work, category, diary number, description…'
     },
     design: {
       label: 'Design', addLabel: 'Add design',
       brandLabel: 'Design Title', clsLabel: 'Locarno Class', clsMode: 'text', clsOptions: null,
       appnoLabel: 'Application No.', markTypeLabel: 'Article', markTypeMode: 'text', markTypeOptions: null, clsPlaceholder: 'e.g. 09-01',
-      descLabel: 'Description of Design', hasRenewal: true, renewYears: 10, hasAuthors: false, hasLogo: false,
+      descLabel: 'Description of Design', hasRenewal: true, renewYears: 10, hasAuthors: false, hasContributors: true, hasLogo: false,
       searchPlaceholder: 'Search design title, Locarno class, application no., description…'
     }
   };
@@ -595,7 +595,9 @@
     { key: 'status', label: 'Status', get: function (r) { return statusDef(r.status).label; } },
     { key: 'desc', label: function (cfg) { return cfg.descLabel; }, get: function (r) { return r.desc || ''; } },
     { key: 'action', label: 'Next step', get: function (r) { return r.action || ''; } },
-    { key: 'applicant', label: 'Applicant', get: function (r) { return (r.applicants || []).map(function (a) { return a.name; }).join(' '); } }
+    { key: 'applicant', label: 'Applicant', get: function (r) { return (r.applicants || []).map(function (a) { return [a.name, a.authorizedPerson, a.address].filter(Boolean).join(' '); }).join(' '); } },
+    { key: 'author', label: 'Author', get: function (r) { return (r.authors || []).map(function (a) { return [a.name, a.institution, a.address].filter(Boolean).join(' '); }).join(' '); }, hiddenIf: function (cfg) { return !cfg.hasAuthors; } },
+    { key: 'contributor', label: 'Contributor / Researcher', get: function (r) { return (r.contributors || []).map(function (c) { return [c.name, c.institution, c.affiliation].filter(Boolean).join(' '); }).join(' '); }, hiddenIf: function (cfg) { return !cfg.hasContributors; } }
   ];
   function searchFieldLabel(f, cfg) {
     return typeof f.label === 'function' ? f.label(cfg) : f.label;
@@ -733,6 +735,15 @@
       }
       if (!r.timeline || !Array.isArray(r.timeline)) {
         r.timeline = [];
+      }
+      if (!r.applicants || !Array.isArray(r.applicants)) {
+        r.applicants = [];
+      }
+      if (!r.authors || !Array.isArray(r.authors)) {
+        r.authors = [];
+      }
+      if (!r.contributors || !Array.isArray(r.contributors)) {
+        r.contributors = [];
       }
       if (!r.id || seenRecordIds[r.id]) {
         var newId = 't-' + String(maxRecordSeq++).padStart(3, '0');
@@ -1604,6 +1615,7 @@
           (r.actionDate ? '\n\nDeadline: ' + fmtDate(r.actionDate) : '') + '</p></div>' +
           '<div class="detail-block"><h4>Applicant(s)</h4>' + (r.applicants && r.applicants.length ? personSummaryLines(r.applicants, true) : '<p>—</p>') + '</div>' +
           (cfg.hasAuthors && r.authors && r.authors.length ? '<div class="detail-block"><h4>Author(s)</h4>' + personSummaryLines(r.authors, false) + '</div>' : '') +
+          (cfg.hasContributors && r.contributors && r.contributors.length ? '<div class="detail-block"><h4>Internal Contributor(s) / Researcher(s)</h4>' + contributorSummaryLines(r.contributors) + '</div>' : '') +
           (cfg.hasLogo && r.logoUrl ? '<div class="detail-block"><h4>Logo</h4><img class="detail-logo-img" src="' + escapeHtml(r.logoUrl) + '" alt=""></div>' : '') +
           renderRecordTimeline(r) +
           '</div></td></tr>';
@@ -1946,7 +1958,7 @@
     return { id: null, clientId: view.clientId === '__all__' ? ((state.clients[0] && state.clients[0].id) || null) : view.clientId,
       ipType: view.ipType, code: '', brand: '', cls: cfg.clsMode === 'select' ? (cfg.clsOptions[0] || '') : '', appno: '',
       markType: cfg.markTypeMode === 'select' ? MARK_TYPES[0] : '', status: statusDefsForType(view.ipType)[0].key, desc: '', action: '',
-      actionDate: '', renewDate: '', newClientName: '', applicants: [], authors: [], logoUrl: '', timeline: [] };
+      actionDate: '', renewDate: '', newClientName: '', applicants: [], authors: [], contributors: [], logoUrl: '', timeline: [] };
   }
 
   function openAddModal() {
@@ -1970,6 +1982,7 @@
     modalState.draft.newClientName = '';
     if (!modalState.draft.applicants) modalState.draft.applicants = [];
     if (!modalState.draft.authors) modalState.draft.authors = [];
+    if (!modalState.draft.contributors) modalState.draft.contributors = [];
     if (!modalState.draft.logoUrl) modalState.draft.logoUrl = '';
     if (!modalState.draft.timeline) modalState.draft.timeline = [];
     renderModal();
@@ -2064,17 +2077,30 @@
     html += '<div class="person-card-head"><span class="person-card-title">Author ' + (idx + 1) + '</span>' +
       '<button type="button" class="btn-ghost" data-action="remove-author" data-idx="' + idx + '" title="Remove">✕</button></div>';
     html += '<div class="person-field-grid">';
-    html += personCardField('Name', '<input type="text" data-author-field="name"' + dAttr + ' value="' + escapeHtml(a.name || '') + '" placeholder="Author name">', 'span-2');
-    html += personCardField('Address / Affiliation', '<textarea data-author-field="address"' + dAttr + ' placeholder="Residential address">' + escapeHtml(a.address || '') + '</textarea>', 'span-2');
+    html += personCardField('Name', '<input type="text" data-author-field="name"' + dAttr + ' value="' + escapeHtml(a.name || '') + '" placeholder="Author full name">', 'span-2');
+    html += personCardField('Institution / Department', '<input type="text" data-author-field="institution"' + dAttr + ' value="' + escapeHtml(a.institution || '') + '" placeholder="e.g. Dept. of Computer Science / University or College">', 'span-2');
+    html += personCardField('Address / Affiliation', '<textarea data-author-field="address"' + dAttr + ' placeholder="Residential or institutional address">' + escapeHtml(a.address || '') + '</textarea>', 'span-2');
     html += personCardField('Nationality', '<input type="text" data-author-field="nationality"' + dAttr + ' value="' + escapeHtml(a.nationality || '') + '">');
     html += personCardField('Country of Residence', '<input type="text" data-author-field="countryOfResidence"' + dAttr + ' value="' + escapeHtml(a.countryOfResidence || '') + '">');
     html += personCardField('Gender', genderSelectHtml('data-author-field="gender"' + dAttr, a.gender, false), 'span-2');
     html += '</div></div>';
     return html;
   }
-  // Shared by the ledger detail-expand row for both the Applicant(s) and Author(s) blocks: a bold
-  // primary line, plus a smaller secondary line of whichever extra attributes are actually filled
-  // in (blank ones are omitted rather than printed empty).
+
+  function renderContributorCard(c, idx) {
+    var dAttr = ' data-contributor-idx="' + idx + '"';
+    var html = '<div class="person-card" data-contributor-idx="' + idx + '">';
+    html += '<div class="person-card-head"><span class="person-card-title">Contributor / Researcher ' + (idx + 1) + '</span>' +
+      '<button type="button" class="btn-ghost" data-action="remove-contributor" data-idx="' + idx + '" title="Remove">✕</button></div>';
+    html += '<div class="person-field-grid">';
+    html += personCardField('Contributor Name', '<input type="text" data-contributor-field="name"' + dAttr + ' value="' + escapeHtml(c.name || '') + '" placeholder="Contributor / Researcher name">', 'span-2');
+    html += personCardField('Institution / Department', '<input type="text" data-contributor-field="institution"' + dAttr + ' value="' + escapeHtml(c.institution || '') + '" placeholder="e.g. School of Design / Department of Mechanical Engg">', 'span-2');
+    html += personCardField('Affiliation / Employee ID (Optional)', '<input type="text" data-contributor-field="affiliation"' + dAttr + ' value="' + escapeHtml(c.affiliation || '') + '" placeholder="e.g. Lead Researcher / EMP-84920">', 'span-2');
+    html += '</div></div>';
+    return html;
+  }
+
+  // Shared by the ledger detail-expand row for Applicant(s) and Author(s) blocks
   function personSummaryLines(list, isApplicant) {
     return (list || []).map(function (a) {
       var line1 = escapeHtml(a.name || '');
@@ -2083,10 +2109,23 @@
         if (a.authorizedPerson) line1 += ' — authorised: ' + escapeHtml(a.authorizedPerson);
       }
       var parts = [];
+      if (a.institution) parts.push('Institution: ' + escapeHtml(a.institution));
       if (a.address) parts.push(escapeHtml(a.address));
       if (a.nationality) parts.push('Nationality: ' + escapeHtml(a.nationality));
       if (a.countryOfResidence) parts.push('Country: ' + escapeHtml(a.countryOfResidence));
       if (a.gender) parts.push(escapeHtml(a.gender));
+      var line2 = parts.join(' · ');
+      return '<div class="person-summary-item"><p class="person-summary-main">' + line1 + '</p>' +
+        (line2 ? '<p class="person-summary-sub">' + line2 + '</p>' : '') + '</div>';
+    }).join('');
+  }
+
+  function contributorSummaryLines(list) {
+    return (list || []).map(function (c) {
+      var line1 = escapeHtml(c.name || '');
+      var parts = [];
+      if (c.institution) parts.push('Dept / Institution: ' + escapeHtml(c.institution));
+      if (c.affiliation) parts.push('Affiliation / ID: ' + escapeHtml(c.affiliation));
       var line2 = parts.join(' · ');
       return '<div class="person-summary-item"><p class="person-summary-main">' + line1 + '</p>' +
         (line2 ? '<p class="person-summary-sub">' + line2 + '</p>' : '') + '</div>';
@@ -2246,6 +2285,17 @@
       });
       html += '</div>';
       html += '<button type="button" class="btn btn-secondary" style="margin-top:10px;" data-action="add-author">+ Add Author</button>';
+      html += '</div>';
+    }
+
+    if (cfg.hasContributors) {
+      html += '<div class="field span-2"><label>Internal Contributors / Researchers <span class="hint">(faculty, employees, or researchers who contributed to the design)</span></label>';
+      html += '<div class="person-cards">';
+      (d.contributors || []).forEach(function (c, idx) {
+        html += renderContributorCard(c, idx);
+      });
+      html += '</div>';
+      html += '<button type="button" class="btn btn-secondary" style="margin-top:10px;" data-action="add-contributor">+ Add Contributor</button>';
       html += '</div>';
     }
 
@@ -2494,10 +2544,23 @@
   function cleanAuthors(list) {
     return (list || []).map(function (a) {
       return {
-        name: (a.name || '').trim(), address: (a.address || '').trim(), nationality: (a.nationality || '').trim(),
-        countryOfResidence: (a.countryOfResidence || '').trim(), gender: a.gender || ''
+        name: (a.name || '').trim(),
+        institution: (a.institution || '').trim(),
+        address: (a.address || '').trim(),
+        nationality: (a.nationality || '').trim(),
+        countryOfResidence: (a.countryOfResidence || '').trim(),
+        gender: a.gender || ''
       };
-    }).filter(function (a) { return a.name; });
+    }).filter(function (a) { return a.name || a.institution; });
+  }
+  function cleanContributors(list) {
+    return (list || []).map(function (c) {
+      return {
+        name: (c.name || '').trim(),
+        institution: (c.institution || '').trim(),
+        affiliation: (c.affiliation || '').trim()
+      };
+    }).filter(function (c) { return c.name || c.institution || c.affiliation; });
   }
 
   function saveRecord() {
@@ -2537,6 +2600,7 @@
       renewDate: d.renewDate || null,
       applicants: cleanApplicants(d.applicants),
       authors: cleanAuthors(d.authors),
+      contributors: cleanContributors(d.contributors),
       logoUrl: (d.logoUrl || '').trim(),
       timeline: (d.timeline && Array.isArray(d.timeline)) ? d.timeline : (existingRecord && existingRecord.timeline ? existingRecord.timeline : [])
     };
@@ -2681,6 +2745,11 @@
     state.records.forEach(function (r) { if (r.ipType === ipType) max = Math.max(max, (r.authors || []).length); });
     return max;
   }
+  function maxContributorsForIpType(ipType) {
+    var max = 1;
+    state.records.forEach(function (r) { if (r.ipType === ipType) max = Math.max(max, (r.contributors || []).length); });
+    return max;
+  }
   function importColumnsFor(ipType) {
     var cfg = ipConfig(ipType);
     var cols = ['Code', 'Client Name', cfg.brandLabel];
@@ -2695,7 +2764,13 @@
     if (cfg.hasAuthors) {
       var maxAuth = maxAuthorsForIpType(ipType);
       for (var j = 1; j <= maxAuth; j++) {
-        cols.push('Author ' + j + ' Name', 'Author ' + j + ' Address', 'Author ' + j + ' Nationality', 'Author ' + j + ' Country of Residence', 'Author ' + j + ' Gender');
+        cols.push('Author ' + j + ' Name', 'Author ' + j + ' Institution / Department', 'Author ' + j + ' Address / Affiliation', 'Author ' + j + ' Nationality', 'Author ' + j + ' Country of Residence', 'Author ' + j + ' Gender');
+      }
+    }
+    if (cfg.hasContributors) {
+      var maxContrib = maxContributorsForIpType(ipType);
+      for (var k = 1; k <= maxContrib; k++) {
+        cols.push('Contributor ' + k + ' Name', 'Contributor ' + k + ' Institution / Department', 'Contributor ' + k + ' Affiliation / Employee ID');
       }
     }
     return cols;
@@ -2766,10 +2841,12 @@
   function getPersonField(row, kind, n, field) {
     var base = kind + ' ' + n + ' ';
     var map = {
-      name: [base + 'Name', base + 'Full Name', kind + ' Name ' + n],
+      name: [base + 'Name', base + 'Full Name', kind + ' Name ' + n, kind + ' Name'],
       entityType: [base + 'Entity Type', base + 'Type', base + 'Entity'],
       authorized: [base + 'Authorized Person', base + 'Authorised Person', base + 'Authorized Signatory', base + 'Signatory'],
-      address: [base + 'Address', base + 'Full Address'],
+      institution: [base + 'Institution / Department', base + 'Institution', base + 'Department', base + 'Dept', base + 'Institution/Department', base + 'College / Dept', base + 'University / Dept', base + 'Org'],
+      affiliation: [base + 'Affiliation / Employee ID', base + 'Affiliation / ID', base + 'Affiliation', base + 'Employee ID', base + 'Emp ID', base + 'Designation / ID', base + 'ID', base + 'Designation'],
+      address: [base + 'Address / Affiliation', base + 'Address', base + 'Full Address', base + 'Affiliation / Address', base + 'Affiliation'],
       nationality: [base + 'Nationality'],
       country: [base + 'Country of Residence', base + 'Country', base + 'Residence'],
       gender: [base + 'Gender', base + 'Sex']
@@ -2805,10 +2882,16 @@
     exampleValues['Applicant 1 Address'] = '221B, Industrial Estate, New Delhi, India';
     if (cfg.hasAuthors) {
       exampleValues['Author 1 Name'] = 'Rahul Sharma';
-      exampleValues['Author 1 Address'] = '221B, Industrial Estate, New Delhi, India';
+      exampleValues['Author 1 Institution / Department'] = 'Department of Computer Science, Delhi University';
+      exampleValues['Author 1 Address / Affiliation'] = '221B, Industrial Estate, New Delhi, India';
       exampleValues['Author 1 Nationality'] = 'Indian';
       exampleValues['Author 1 Country of Residence'] = 'India';
       exampleValues['Author 1 Gender'] = 'Male';
+    }
+    if (cfg.hasContributors) {
+      exampleValues['Contributor 1 Name'] = 'Dr. Priya Sharma';
+      exampleValues['Contributor 1 Institution / Department'] = 'School of Industrial Design, IIT Delhi';
+      exampleValues['Contributor 1 Affiliation / Employee ID'] = 'Lead Designer / EMP-84920';
     }
     var example = cols.map(function (c) { return exampleValues.hasOwnProperty(c) ? exampleValues[c] : ''; });
     var lines = [cols.map(csvEscape).join(','), example.map(csvEscape).join(',')];
@@ -3098,6 +3181,7 @@
         if (!aname) continue;
         authors.push({
           name: aname,
+          institution: getPersonField(row, 'Author', m, 'institution'),
           address: getPersonField(row, 'Author', m, 'address'),
           nationality: getPersonField(row, 'Author', m, 'nationality'),
           countryOfResidence: getPersonField(row, 'Author', m, 'country'),
@@ -3106,10 +3190,23 @@
       }
     }
 
+    var contributors = [];
+    if (cfg.hasContributors) {
+      for (var k = 1; k <= 10; k++) {
+        var cname = getPersonField(row, 'Contributor', k, 'name') || (k === 1 ? getPersonField(row, 'Researcher', 1, 'name') : '');
+        if (!cname) continue;
+        contributors.push({
+          name: cname,
+          institution: getPersonField(row, 'Contributor', k, 'institution') || getPersonField(row, 'Researcher', k, 'institution'),
+          affiliation: getPersonField(row, 'Contributor', k, 'affiliation') || getPersonField(row, 'Researcher', k, 'affiliation')
+        });
+      }
+    }
+
     var draft = {
       code: code, clientName: clientName, brand: brand, markType: markType, cls: cls2, appno: appno,
       status: statusKey, desc: desc, action: action || statusDef(statusKey).suggestedAction,
-      actionDate: actionDate, renewDate: renewDate, applicants: applicants, authors: authors
+      actionDate: actionDate, renewDate: renewDate, applicants: applicants, authors: authors, contributors: contributors
     };
     return { rowNum: rowNum, draft: draft, errors: errors, warnings: warnings, ok: errors.length === 0 };
   }
@@ -3162,7 +3259,7 @@
       var record = {
         id: nextRecordId(newState), clientId: clientId, ipType: ipType, code: d.code, brand: d.brand,
         cls: d.cls, appno: d.appno, markType: d.markType, status: d.status, desc: d.desc, action: d.action,
-        actionDate: d.actionDate, renewDate: d.renewDate, applicants: d.applicants, authors: d.authors || [], logoUrl: ''
+        actionDate: d.actionDate, renewDate: d.renewDate, applicants: d.applicants, authors: d.authors || [], contributors: d.contributors || [], logoUrl: '', timeline: []
       };
       newState.records.push(record);
       newState.nextRecordSeq = (newState.nextRecordSeq || newState.records.length + 1) + 1;
@@ -3242,18 +3339,29 @@
     var cols = [
       { key: 'code', label: 'Code', get: function (r) { return r.code || ''; } },
       { key: 'client', label: 'Client', get: function (r) { var c = clientById(r.clientId); return c ? c.name : ''; } },
+      { key: 'ipType', label: 'IP Type', get: function (r) { return ipConfig(r.ipType || ipType).label; } },
       { key: 'brand', label: cfg.brandLabel, get: function (r) { return r.brand || ''; } }
     ];
-    if (cfg.markTypeMode !== 'hidden') cols.push({ key: 'markType', label: cfg.markTypeLabel, get: function (r) { return r.markType || ''; } });
+    if (cfg.markTypeMode !== 'hidden') {
+      cols.push({ key: 'markType', label: cfg.markTypeLabel || 'Mark Type / Article', get: function (r) { return r.markType || ''; } });
+    }
     cols.push(
       { key: 'cls', label: cfg.clsLabel, get: function (r) { return r.cls !== null && r.cls !== undefined ? r.cls : ''; } },
       { key: 'appno', label: cfg.appnoLabel, get: function (r) { return r.appno || ''; } },
       { key: 'status', label: 'Status', get: function (r) { return statusDef(r.status).label; } },
+      { key: 'statusTier', label: 'Status Tier', get: function (r) { return statusDef(r.status).tier || ''; } },
       { key: 'desc', label: cfg.descLabel, get: function (r) { return r.desc || ''; } },
-      { key: 'action', label: 'Next Step', get: function (r) { return r.action || ''; } },
-      { key: 'actionDate', label: 'Next Deadline', get: function (r) { return r.actionDate || ''; } }
+      { key: 'action', label: 'Next Step / Notes', get: function (r) { return r.action || ''; } },
+      { key: 'actionDate', label: 'Next Deadline', get: function (r) { return r.actionDate || ''; } },
+      { key: 'deadlineDays', label: 'Days Until Deadline', get: function (r) { return r.actionDate ? daysUntil(r.actionDate) : ''; } }
     );
-    if (cfg.hasRenewal) cols.push({ key: 'renewDate', label: 'Renewal Date', get: function (r) { return r.renewDate || ''; } });
+    if (cfg.hasRenewal) {
+      cols.push({ key: 'renewDate', label: 'Renewal Date', get: function (r) { return r.renewDate || ''; } });
+    }
+    if (cfg.hasLogo) {
+      cols.push({ key: 'logoUrl', label: 'Logo / Asset URL', get: function (r) { return r.logoUrl || ''; } });
+    }
+
     var maxApplicants = 0;
     records.forEach(function (r) { maxApplicants = Math.max(maxApplicants, (r.applicants || []).length); });
     var _loop = function (i) {
@@ -3266,18 +3374,56 @@
       cols.push({ key: 'app' + i + 'gender', label: 'Applicant ' + (i + 1) + ' Gender', get: function (r) { var a = (r.applicants || [])[i]; return a ? a.gender || '' : ''; } });
     };
     for (var i = 0; i < maxApplicants; i++) { _loop(i); }
+
     if (cfg.hasAuthors) {
       var maxAuthors = 0;
       records.forEach(function (r) { maxAuthors = Math.max(maxAuthors, (r.authors || []).length); });
       var _loopAuth = function (j) {
         cols.push({ key: 'auth' + j + 'name', label: 'Author ' + (j + 1) + ' Name', get: function (r) { var a = (r.authors || [])[j]; return a ? a.name || '' : ''; } });
-        cols.push({ key: 'auth' + j + 'address', label: 'Author ' + (j + 1) + ' Address', get: function (r) { var a = (r.authors || [])[j]; return a ? a.address || '' : ''; } });
+        cols.push({ key: 'auth' + j + 'institution', label: 'Author ' + (j + 1) + ' Institution / Department', get: function (r) { var a = (r.authors || [])[j]; return a ? a.institution || '' : ''; } });
+        cols.push({ key: 'auth' + j + 'address', label: 'Author ' + (j + 1) + ' Address / Affiliation', get: function (r) { var a = (r.authors || [])[j]; return a ? a.address || '' : ''; } });
         cols.push({ key: 'auth' + j + 'nationality', label: 'Author ' + (j + 1) + ' Nationality', get: function (r) { var a = (r.authors || [])[j]; return a ? a.nationality || '' : ''; } });
         cols.push({ key: 'auth' + j + 'country', label: 'Author ' + (j + 1) + ' Country of Residence', get: function (r) { var a = (r.authors || [])[j]; return a ? a.countryOfResidence || '' : ''; } });
         cols.push({ key: 'auth' + j + 'gender', label: 'Author ' + (j + 1) + ' Gender', get: function (r) { var a = (r.authors || [])[j]; return a ? a.gender || '' : ''; } });
       };
       for (var j = 0; j < maxAuthors; j++) { _loopAuth(j); }
     }
+
+    if (cfg.hasContributors) {
+      var maxContributors = 0;
+      records.forEach(function (r) { maxContributors = Math.max(maxContributors, (r.contributors || []).length); });
+      var _loopContrib = function (k) {
+        cols.push({ key: 'contrib' + k + 'name', label: 'Contributor ' + (k + 1) + ' Name', get: function (r) { var c = (r.contributors || [])[k]; return c ? c.name || '' : ''; } });
+        cols.push({ key: 'contrib' + k + 'institution', label: 'Contributor ' + (k + 1) + ' Institution / Department', get: function (r) { var c = (r.contributors || [])[k]; return c ? c.institution || '' : ''; } });
+        cols.push({ key: 'contrib' + k + 'affiliation', label: 'Contributor ' + (k + 1) + ' Affiliation / Employee ID', get: function (r) { var c = (r.contributors || [])[k]; return c ? c.affiliation || '' : ''; } });
+      };
+      for (var k = 0; k < maxContributors; k++) { _loopContrib(k); }
+    }
+
+    cols.push(
+      { key: 'timelineCount', label: 'Stage Transitions Count', get: function (r) { return (r.timeline || []).length; } },
+      { key: 'latestTransition', label: 'Latest Stage Transition', get: function (r) {
+        var t = (r.timeline || [])[0];
+        if (!t) return '—';
+        return (t.fromStatusLabel || t.fromStatus) + ' ➔ ' + (t.toStatusLabel || t.toStatus) + ' (' + (fmtDate(t.effectiveDate) || t.effectiveDate || '') + ')';
+      } },
+      { key: 'latestTransitionRemarks', label: 'Latest Transition Remarks', get: function (r) {
+        var t = (r.timeline || [])[0];
+        return t ? (t.remarks || '') : '';
+      } },
+      { key: 'auditTrailFull', label: 'Full Audit Trail History', get: function (r) {
+        var list = r.timeline || [];
+        if (!list.length) return 'No transitions recorded';
+        return list.map(function (t, idx) {
+          return '[' + (idx + 1) + '] ' + (t.fromStatusLabel || t.fromStatus) + ' ➔ ' + (t.toStatusLabel || t.toStatus) +
+            ' | Effective: ' + (t.effectiveDate || '—') +
+            (t.deadline ? ' | Deadline: ' + t.deadline : '') +
+            (t.remarks ? ' | Remarks: ' + t.remarks : '') +
+            (t.timestamp ? ' | Logged: ' + t.timestamp : '');
+        }).join(' ;; ');
+      } }
+    );
+
     return cols;
   }
   function radioRow(name, value, isChecked, label) {
@@ -3631,13 +3777,25 @@
         case 'add-author':
           e.stopPropagation();
           modalState.draft.authors = modalState.draft.authors || [];
-          modalState.draft.authors.push({ name: '', address: '', nationality: '', countryOfResidence: '', gender: '' });
+          modalState.draft.authors.push({ name: '', institution: '', address: '', nationality: '', countryOfResidence: '', gender: '' });
           renderModal();
           break;
         case 'remove-author':
           e.stopPropagation();
           var rmAuthorIdx = parseInt(el.getAttribute('data-idx'), 10);
           modalState.draft.authors.splice(rmAuthorIdx, 1);
+          renderModal();
+          break;
+        case 'add-contributor':
+          e.stopPropagation();
+          modalState.draft.contributors = modalState.draft.contributors || [];
+          modalState.draft.contributors.push({ name: '', institution: '', affiliation: '' });
+          renderModal();
+          break;
+        case 'remove-contributor':
+          e.stopPropagation();
+          var rmContribIdx = parseInt(el.getAttribute('data-idx'), 10);
+          modalState.draft.contributors.splice(rmContribIdx, 1);
           renderModal();
           break;
         case 'dashboard-goto':
@@ -3711,6 +3869,12 @@
         var authIdx = parseInt(el.getAttribute('data-author-idx'), 10);
         var authField = el.getAttribute('data-author-field');
         modalState.draft.authors[authIdx][authField] = el.value;
+        return;
+      }
+      if (el.matches('[data-contributor-field]')) {
+        var cIdx = parseInt(el.getAttribute('data-contributor-idx'), 10);
+        var cField = el.getAttribute('data-contributor-field');
+        modalState.draft.contributors[cIdx][cField] = el.value;
         return;
       }
       if (el.matches('[data-action="logo-file-input"]')) {
@@ -3816,6 +3980,12 @@
         var authIdx2 = parseInt(el.getAttribute('data-author-idx'), 10);
         var authField2 = el.getAttribute('data-author-field');
         modalState.draft.authors[authIdx2][authField2] = el.value;
+        return;
+      }
+      if (el.matches('[data-contributor-field]')) {
+        var cIdx2 = parseInt(el.getAttribute('data-contributor-idx'), 10);
+        var cField2 = el.getAttribute('data-contributor-field');
+        modalState.draft.contributors[cIdx2][cField2] = el.value;
         return;
       }
       if (el.matches('[data-field]') && el.tagName !== 'SELECT') {
