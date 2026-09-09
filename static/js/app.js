@@ -353,6 +353,11 @@
      (backend/roles.py), so tampering with anything here changes the view and
      not the data. */
   var currentUser = null;
+  // The revision of the ledger this browser last actually loaded. Sent back
+  // on every save (X-Ledger-Revision) so the server's merge can tell a
+  // deliberate edit apart from one based on data that predates someone
+  // else's concurrent change -- see backend/roles.py's three-way merge.
+  var serverRevision = null;
 
   function userCan(capability) {
     // Outside the backend tier (a Claude artifact, or localStorage-only) there
@@ -395,7 +400,7 @@
       if (res.status === 401) {
         return { configured: true, authorized: false, authRequired: true, user: null, state: null };
       }
-      if (!res.ok || !data || typeof data !== 'object') return { configured: false, authorized: false, authRequired: false, user: null, state: null };
+      if (!res.ok || !data || typeof data !== 'object') return { configured: false, authorized: false, authRequired: false, user: null, state: null, revision: null };
       return {
         configured: !!data.configured,
         authorized: !!data.authorized,
@@ -404,10 +409,11 @@
         // access control.
         authRequired: data.authRequired !== false,
         user: (data.user && typeof data.user === 'object') ? data.user : null,
-        state: (data.state && typeof data.state === 'object') ? data.state : null
+        state: (data.state && typeof data.state === 'object') ? data.state : null,
+        revision: (typeof data.revision === 'number') ? data.revision : null
       };
     } catch (e) {
-      return { configured: false, authorized: false, authRequired: false, user: null, state: null };
+      return { configured: false, authorized: false, authRequired: false, user: null, state: null, revision: null };
     }
   }
 
@@ -451,6 +457,7 @@
         currentUser = result.user;
         sessionUnlocked = true;
         if (result.state) state = normalizeState(result.state);
+        serverRevision = result.revision;
       } else {
         // A live session cookie is absent or expired — the sign-in screen is
         // rendered by the gate on entry.
@@ -684,9 +691,10 @@
     backendAuthorized = true;
     sessionUnlocked = true;
     state = normalizeState(fresh.state || { clients: [], records: [], log: [] });
+    serverRevision = fresh.revision;
     renderGate();
     renderAll();
-    if (userCan('manage_users')) loadUsers();
+    if (userCan('manage_users')) { loadUsers(); loadLoginHistory(); }
     loadAssignees().then(function () { renderAll(); });
     toast('Signed in as ' + currentUser.username + ' (' + currentUser.roleLabel + ')');
   }
@@ -930,6 +938,49 @@
       '<script id="app-script">' + scriptSrc + '<' + '/script>\n</body>\n</html>';
   }
 
+  // A successful PUT can report two things beyond "saved": that a record or
+  // client's id had to be reassigned (it collided with something someone else
+  // created at the same moment -- see backend/roles.py's three-way merge), or
+  // that a matter's assignedTo no longer named a real account and was
+  // cleared. Both are rare, and both would otherwise be invisible until the
+  // next reload -- or, for the id case, would leave this tab pointing at an
+  // id the server no longer recognises.
+  function handleSaveResponse(data) {
+    if (typeof data.revision === 'number') serverRevision = data.revision;
+
+    var touched = false;
+
+    if (data.idRemap) {
+      (Object.keys(data.idRemap.clients || {})).forEach(function (oldId) {
+        var newId = data.idRemap.clients[oldId];
+        state.clients.forEach(function (c) { if (c.id === oldId) c.id = newId; });
+        state.records.forEach(function (r) { if (r.clientId === oldId) r.clientId = newId; });
+        touched = true;
+      });
+      (Object.keys(data.idRemap.records || {})).forEach(function (oldId) {
+        var newId = data.idRemap.records[oldId];
+        state.records.forEach(function (r) { if (r.id === oldId) r.id = newId; });
+        if (view.expandedId === oldId) view.expandedId = newId;
+        touched = true;
+      });
+      if (touched) {
+        toast('Someone else added a matter or client at the same moment — yours was saved, ' +
+          'just under a different reference number.');
+      }
+    }
+
+    if (data.clearedAssignments && data.clearedAssignments.length) {
+      data.clearedAssignments.forEach(function (id) {
+        state.records.forEach(function (r) { if (r.id === id) r.assignedTo = ''; });
+      });
+      touched = true;
+      toast((data.clearedAssignments.length === 1 ? 'A matter was' : data.clearedAssignments.length + ' matters were') +
+        ' left unassigned — the assignee on record is not an active account.');
+    }
+
+    if (touched) renderAll();
+  }
+
   function persist(newState, successMsg) {
     // Optimistic update: the UI reflects the change immediately, for every tier —
     // a failed remote save reports itself via toast rather than reverting silently
@@ -959,7 +1010,15 @@
     }
 
     if (PERSIST_TIER === 'backend') {
-      fetch('/api/state', { method: 'PUT', headers: apiAuthHeaders(), credentials: 'same-origin', body: JSON.stringify(state) })
+      var putHeaders = apiAuthHeaders();
+      // Tells the server's merge which version of the ledger this edit was
+      // actually based on, so it can tell a deliberate change apart from one
+      // that just predates someone else's concurrent save. See the three-way
+      // merge in backend/roles.py.
+      if (serverRevision !== null && serverRevision !== undefined) {
+        putHeaders['X-Ledger-Revision'] = String(serverRevision);
+      }
+      fetch('/api/state', { method: 'PUT', headers: putHeaders, credentials: 'same-origin', body: JSON.stringify(state) })
         .then(function (res) {
           if (res.status === 401) {
             // The session lapsed. Put the sign-in screen back rather than
@@ -976,7 +1035,9 @@
           }
           if (!res.ok) {
             toast('Could not save to the shared database — please try again.');
+            return;
           }
+          res.json().then(function (data) { handleSaveResponse(data || {}); }, function () {});
         })
         .catch(function () {
           toast('Could not save to the shared database — check your connection and try again.');
@@ -1399,6 +1460,10 @@
         html += '<div class="timeline-remarks">' + escapeHtml(entry.remarks) + '</div>';
       }
 
+      if (entry.by) {
+        html += '<div class="timeline-by">by ' + escapeHtml(entry.by) + '</div>';
+      }
+
       html += '</div>';
       html += '</div>';
     });
@@ -1552,14 +1617,17 @@
     var entries = (state.log || []);
     var html = '<div class="card rail-card" style="padding:8px 4px;">';
     if (!entries.length) {
-      html += '<div class="empty-state">No changes logged yet. Every add, edit, status change and import will show up here.</div>';
+      html += '<div class="empty-state">' + (currentUser && currentUser.role === 'drafter' ?
+        'No changes of yours logged yet. This shows only your own activity, not the whole firm\'s.' :
+        'No changes logged yet. Every add, edit, status change and import will show up here.') + '</div>';
     } else {
       var pageInfo = paginate(entries, view.logPage, getPageSize());
       view.logPage = pageInfo.page;
       html += '<div class="log-list">';
       pageInfo.pageItems.forEach(function (e) {
         html += '<div class="log-item"><div class="log-dot"></div><div class="log-body"><div class="log-summary">' + escapeHtml(e.summary) + '</div>' +
-          '<div class="log-time" title="' + escapeHtml(absoluteTime(e.ts)) + '">' + escapeHtml(relativeTime(e.ts)) + '</div></div></div>';
+          '<div class="log-time" title="' + escapeHtml(absoluteTime(e.ts)) + '">' + escapeHtml(relativeTime(e.ts)) +
+          (e.by ? ' <span class="log-by">by ' + escapeHtml(e.by) + '</span>' : '') + '</div></div></div>';
       });
       html += '</div>';
       html += renderPager('log', pageInfo);
@@ -1593,8 +1661,26 @@
     html += '<button class="btn btn-primary" data-action="change-password"' + (pwState.busy ? ' disabled' : '') + '>' +
       (pwState.busy ? 'Changing…' : 'Change password') + '</button>';
     html += '<p class="settings-note" style="margin-top:10px;">Changing your password signs out every other device.</p>';
+
+    // A lighter-weight option than a password change: end every OTHER session
+    // without touching the credential, for "I think I left myself signed in
+    // somewhere" rather than "my password may be known to someone else."
+    html += '<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">';
+    html += '<button class="btn btn-secondary" data-action="revoke-other-sessions">Sign out of other devices</button>';
+    html += '<p class="settings-note" style="margin-top:8px;">Keeps this browser signed in; ends every other active session for this account.</p>';
+    html += '</div>';
+
     html += '</div>';
     return html;
+  }
+
+  async function submitRevokeOtherSessions() {
+    var res = await apiPost('/api/sessions/revoke-others');
+    if (!res.ok) {
+      toast((res.data && res.data.error) || 'Could not sign out other devices.');
+      return;
+    }
+    toast('Signed out of every other device.');
   }
 
   async function submitPasswordChange() {
@@ -1642,6 +1728,50 @@
       usersState.list = [];
     }
     if (view.mode === 'settings') renderAll();
+  }
+
+  /* ===================== Login history (superadmin only) =====================
+     The throttling in backend/auth.py stops a brute-force run from succeeding;
+     this is what lets a super admin actually SEE that one was attempted,
+     rather than only ever feeling it as "I got locked out" with no context. */
+  var loginHistoryState = { events: null };
+
+  async function loadLoginHistory() {
+    if (!userCan('manage_users')) return;
+    try {
+      var res = await fetch('/api/login-history', { credentials: 'same-origin' });
+      if (!res.ok) { loginHistoryState.events = []; return; }
+      var data = await res.json();
+      loginHistoryState.events = data.events || [];
+    } catch (e) {
+      loginHistoryState.events = [];
+    }
+    if (view.mode === 'settings') renderAll();
+  }
+
+  function renderLoginHistoryCard() {
+    if (!userCan('manage_users')) return '';
+    var html = '<div class="card settings-card"><h3>Recent sign-in activity</h3>';
+    html += '<p class="settings-desc">Every sign-in attempt, successful or not, across every account.</p>';
+    if (loginHistoryState.events === null) {
+      html += '<p class="settings-status">Loading&hellip;</p></div>';
+      return html;
+    }
+    if (!loginHistoryState.events.length) {
+      html += '<div class="empty-state">No sign-in activity recorded yet.</div></div>';
+      return html;
+    }
+    html += '<div class="login-history-list">';
+    loginHistoryState.events.slice(0, 50).forEach(function (e) {
+      html += '<div class="login-history-item' + (e.success ? '' : ' login-history-fail') + '">' +
+        '<span class="login-history-icon">' + (e.success ? '✓' : '✕') + '</span>' +
+        '<span class="login-history-user">' + escapeHtml(e.username || '(blank)') + '</span>' +
+        '<span class="login-history-ip mono">' + escapeHtml(e.ip || '') + '</span>' +
+        '<span class="login-history-time" title="' + escapeHtml(absoluteTime(e.at)) + '">' + escapeHtml(relativeTime(e.at)) + '</span>' +
+        '</div>';
+    });
+    html += '</div></div>';
+    return html;
   }
 
   async function submitNewUser() {
@@ -1858,8 +1988,17 @@
     html += '<div style="margin-top:12px;"><button class="btn btn-secondary" data-action="lock-now"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Lock session now</button></div>';
     html += renderAccountCard();
     html += renderUsersCard();
+    html += renderLoginHistoryCard();
     html += renderBackendSettingsCard();
 
+    // Bulk, ledger-wide destructive tools -- deliberately gated separately from
+    // delete_matter (which only ever removes one matter at a time). Without
+    // this, "Clear all matters" was shown to every role: a drafter clicking it
+    // got a false "All matters cleared" success toast (the server correctly
+    // ignored the request, since a drafter cannot delete anything -- but the
+    // UI had no idea and reported success anyway), and a trademark admin
+    // really could empty the entire firm's ledger in one click.
+    if (userCan('bulk_manage')) {
     html += '<div class="card settings-card"><h3>Data Management & Clean Up</h3>' +
       '<p class="settings-desc">Manage the stored applications and clients in your ledger database.</p>' +
       '<p class="settings-status">Current records: <strong>' + state.records.length + ' matters</strong> &middot; <strong>' + state.clients.length + ' clients</strong></p>' +
@@ -1869,6 +2008,7 @@
       '</div>' +
       '<p class="settings-note">Use "Clean up duplicate records" to collapse identical duplicate entries into single matters, or "Clear all matters" if you wish to reset and re-import a clean CSV file.</p>' +
       '</div>';
+    }
 
     html += '</div>';
     return html;
@@ -2467,6 +2607,7 @@
       effectiveDate: modalState.effectiveDate.trim(),
       deadline: modalState.deadline ? modalState.deadline.trim() : null,
       remarks: modalState.remarks.trim(),
+      by: currentUser ? currentUser.username : '',
       timestamp: new Date().toISOString()
     };
 
@@ -2638,6 +2779,7 @@
         effectiveDate: effDate,
         deadline: dlDate,
         remarks: rem,
+        by: currentUser ? currentUser.username : '',
         timestamp: new Date().toISOString()
       });
       if (dlDate) record.actionDate = dlDate;
@@ -2714,6 +2856,7 @@
   }
 
   function deduplicateRecords() {
+    if (!userCan('bulk_manage')) { toast('Your role does not allow that.'); return; }
     var newState = JSON.parse(JSON.stringify(state));
     var seen = {};
     var unique = [];
@@ -2737,11 +2880,21 @@
   }
 
   function clearAllRecords() {
+    if (!userCan('bulk_manage')) { toast('Your role does not allow that.'); return; }
     if (!state.records.length) {
       toast('There are no matters in the database.');
       return;
     }
-    if (!confirm('Are you sure you want to clear all ' + state.records.length + ' matters? You can re-import your CSV cleanly.')) return;
+    // This empties the entire firm's ledger, not one matter -- a plain OK/Cancel
+    // confirm() is too easy to click through by habit. Require typing the exact
+    // word, the same friction GitHub/similar tools use for irreversible bulk
+    // deletes.
+    var typed = prompt('This clears all ' + state.records.length + ' matters for every client. ' +
+      'This cannot be undone from the app. Type DELETE to confirm.');
+    if (typed !== 'DELETE') {
+      if (typed !== null) toast('Not cleared — you must type DELETE exactly.');
+      return;
+    }
     var newState = JSON.parse(JSON.stringify(state));
     var count = newState.records.length;
     newState.records = [];
@@ -3600,7 +3753,7 @@
       switch (action) {
         case 'set-mode':
           view.mode = el.getAttribute('data-mode');
-          if (view.mode === 'settings' && userCan('manage_users')) loadUsers();
+          if (view.mode === 'settings' && userCan('manage_users')) { loadUsers(); loadLoginHistory(); }
           renderAll();
           break;
         case 'set-iptype':
@@ -3713,6 +3866,9 @@
           break;
         case 'change-password':
           submitPasswordChange();
+          break;
+        case 'revoke-other-sessions':
+          submitRevokeOtherSessions();
           break;
         case 'user-suspend':
           setUserActive(el.getAttribute('data-userid'), el.getAttribute('data-active') === '1');
@@ -4060,7 +4216,7 @@
     maybeNotifyDeadlines();
     // Fire-and-forget: the accounts list only appears in Settings, and
     // loadUsers re-renders once it arrives.
-    if (userCan('manage_users')) loadUsers();
+    if (userCan('manage_users')) { loadUsers(); loadLoginHistory(); }
     loadAssignees();
   }
   init();

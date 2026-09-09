@@ -103,7 +103,13 @@ def test_unicode_round_trip(client):
     """Client names and titles of work are not ASCII-only."""
     uni = {"clients": [{"id": "c-1", "name": "Ünïcode — 商標 ✓"}], "records": [], "log": []}
     client.put("/api/state", json=uni)
-    assert client.get("/api/state").json()["state"] == uni
+    got = client.get("/api/state").json()["state"]
+    # The merge always guarantees nextClientSeq/nextRecordSeq are present and
+    # monotonic (backend/roles.py), even when the payload omitted them -- so
+    # compare the fields this test actually cares about, not the whole document.
+    assert got["clients"] == uni["clients"]
+    assert got["records"] == uni["records"]
+    assert got["log"] == uni["log"]
 
 
 @pytest.mark.parametrize("method", ["post", "delete", "patch"])

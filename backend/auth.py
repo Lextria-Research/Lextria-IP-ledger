@@ -13,6 +13,8 @@ import hashlib
 import hmac
 import secrets
 import sqlite3
+import threading
+import time
 from datetime import datetime, timedelta, timezone
 
 from . import db, roles
@@ -100,6 +102,16 @@ def init_auth_schema():
             );
 
             CREATE INDEX IF NOT EXISTS idx_attempts ON login_attempts(username, at);
+
+            CREATE TABLE IF NOT EXISTS login_history (
+                id       INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT    NOT NULL,
+                success  INTEGER NOT NULL,
+                ip       TEXT    NOT NULL,
+                at       TEXT    NOT NULL
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_history_at ON login_history(at);
             """
         )
 
@@ -228,12 +240,13 @@ def authenticate_throttled(username, password):
     return user, 0
 
 
-# --- Login throttling -------------------------------------------------------
+# --- Login throttling (per account, durable) --------------------------------
 #
 # A 600k-iteration hash makes an OFFLINE attack on a stolen database expensive.
 # It does nothing about someone simply POSTing guesses at /api/login, which is
-# the cheaper attack when the server is reachable. These limits make an online
-# guessing run impractical without locking a real user out for long.
+# the cheaper attack when the server is reachable. This limit makes an online
+# guessing run against ONE account impractical without locking it out for long.
+# Persisted in SQLite, so it survives a server restart.
 
 MAX_FAILURES = 5          # consecutive failures before a lockout
 LOCKOUT_SECONDS = 300     # how long the lockout lasts
@@ -271,6 +284,67 @@ def lockout_seconds_remaining(username):
     elapsed = (_now() - newest).total_seconds()
     remaining = LOCKOUT_SECONDS - elapsed
     return int(remaining) if remaining > 0 else 0
+
+
+# --- Login rate limiting (per source address, in memory) --------------------
+#
+# Separate from the per-account lockout above, and deliberately NOT persisted:
+# this caps how many /api/login REQUESTS one address may make at all, success
+# or failure, regardless of which username(s) it tries -- the gap the
+# per-account limit alone leaves open, since spraying one guess across many
+# different usernames never makes any single account reach MAX_FAILURES.
+#
+# Kept in an in-process dict rather than SQLite on purpose: there is nothing
+# here worth surviving a restart, a plain dict needs no schema (so there is
+# nothing to migrate as this limit's shape changes), and it avoids a disk
+# write on every single login request. It resets to empty whenever the server
+# restarts, which simply means the count starts over -- an acceptable trade
+# for a lightweight abuse guard rather than a durable record (that durable
+# record is login_history, below).
+IP_LOGIN_MAX_REQUESTS = 20
+IP_LOGIN_WINDOW_SECONDS = 300
+
+_ip_login_times = {}
+_ip_login_lock = threading.Lock()
+
+
+def reset_ip_login_limiter():
+    """Clear the in-memory per-address counters.
+
+    Only meaningful for tests: every test in a pytest run shares this one
+    process (and every request through Starlette's TestClient reports the
+    same fake source address), so without resetting this between tests, an
+    early test's login attempts would count against a later, unrelated one.
+    A real deployment never needs to call this -- restarting the process does
+    the same thing, which is exactly what "not persisted" already means.
+    """
+    with _ip_login_lock:
+        _ip_login_times.clear()
+
+
+def ip_login_wait_seconds(ip):
+    """Seconds this address must wait before its next /api/login request may
+    proceed, or 0 if it may go ahead right now -- which this also records as
+    one of its uses within the window, so this must be called at most once per
+    actual request."""
+    if not ip:
+        return 0
+    now = time.monotonic()
+    cutoff = now - IP_LOGIN_WINDOW_SECONDS
+    with _ip_login_lock:
+        times = _ip_login_times.setdefault(ip, [])
+        while times and times[0] < cutoff:
+            times.pop(0)
+        if len(times) >= IP_LOGIN_MAX_REQUESTS:
+            return max(1, int(IP_LOGIN_WINDOW_SECONDS - (now - times[0])))
+        times.append(now)
+        # Bound memory: an address that has never been seen recently is
+        # dropped, so this cannot grow forever across the life of the process.
+        if len(_ip_login_times) > 10000:
+            stale = [k for k, v in _ip_login_times.items() if not v or v[-1] < cutoff]
+            for k in stale:
+                _ip_login_times.pop(k, None)
+        return 0
 
 
 def start_session(user_id):
@@ -313,9 +387,95 @@ def end_session(token):
         conn.execute("DELETE FROM sessions WHERE token = ?", (token,))
 
 
+def end_other_sessions(user_id, keep_token):
+    """Sign this account out everywhere except the session making the request.
+
+    A password change already ends every session (the right default when the
+    password itself may be compromised); this is the lighter-weight action for
+    "I think I left myself logged in on a shared computer" -- no credential
+    needs to change, just every OTHER session.
+    """
+    with db._write_lock, db._connect() as conn:
+        conn.execute(
+            "DELETE FROM sessions WHERE user_id = ? AND token != ?",
+            (user_id, keep_token or ""),
+        )
+
+
+def active_session_count(user_id):
+    with db._connect() as conn:
+        row = conn.execute(
+            "SELECT COUNT(*) AS n FROM sessions WHERE user_id = ? AND expires_at >= ?",
+            (user_id, _iso(_now())),
+        ).fetchone()
+    return row["n"]
+
+
 def purge_expired_sessions():
     with db._write_lock, db._connect() as conn:
         conn.execute("DELETE FROM sessions WHERE expires_at < ?", (_iso(_now()),))
+
+
+# --- Login history ------------------------------------------------------
+#
+# Separate from login_attempts (a short-lived throttling cache that is pruned
+# aggressively): this is a durable record of who tried to sign in, from where,
+# and whether it worked, so a super admin can actually see whether an account
+# is under attack rather than just feeling the lockout happen.
+
+LOGIN_HISTORY_LIMIT = 500
+
+
+def record_login_event(username, success, ip):
+    with db._write_lock, db._connect() as conn:
+        conn.execute(
+            "INSERT INTO login_history (username, success, ip, at) VALUES (?, ?, ?, ?)",
+            ((username or "").strip(), 1 if success else 0, ip or "unknown", _iso(_now())),
+        )
+        conn.execute(
+            "DELETE FROM login_history WHERE id NOT IN"
+            " (SELECT id FROM login_history ORDER BY id DESC LIMIT ?)",
+            (LOGIN_HISTORY_LIMIT,),
+        )
+
+
+def recent_login_events(limit=100):
+    limit = max(1, min(limit, LOGIN_HISTORY_LIMIT))
+    with db._connect() as conn:
+        rows = conn.execute(
+            "SELECT username, success, ip, at FROM login_history"
+            " ORDER BY id DESC LIMIT ?",
+            (limit,),
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
+# --- Password strength --------------------------------------------------
+#
+# The 8-character minimum (enforced by callers) stops a one-character
+# password; it does nothing about "password1" or a password that is just the
+# account's own username. This blocklist catches the handful of choices that
+# are guessed in the first few seconds of any real attack, without pretending
+# to be a full password-strength meter.
+
+_WEAK_PASSWORDS = frozenset([
+    "password", "password1", "password123", "12345678", "123456789",
+    "1234567890", "qwertyui", "qwerty123", "letmein11", "welcome11",
+    "admin1234", "changeme1", "abc123456", "iloveyou1", "superadmin",
+    "trademark", "drafter123", "lextria123",
+])
+
+
+def is_weak_password(password, username=None):
+    """A short, human-readable reason the password is too weak, or None."""
+    pw = password or ""
+    if pw.lower() in _WEAK_PASSWORDS:
+        return "That password is far too common — choose something less guessable."
+    if username and pw.lower() == username.strip().lower():
+        return "The password cannot be the same as the username."
+    if len(set(pw)) == 1:
+        return "That password is a single character repeated — choose something with more variety."
+    return None
 
 
 def ensure_superadmin():

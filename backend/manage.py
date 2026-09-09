@@ -16,10 +16,14 @@ from . import auth, db, roles
 MIN_PASSWORD = 8
 
 
-def _prompt_password(label="Password"):
+def _prompt_password(label="Password", username=None):
     first = getpass.getpass("%s: " % label)
     if len(first) < MIN_PASSWORD:
         print("Password must be at least %d characters." % MIN_PASSWORD)
+        return None
+    weak_reason = auth.is_weak_password(first, username)
+    if weak_reason:
+        print(weak_reason)
         return None
     if first != getpass.getpass("Confirm: "):
         print("Passwords did not match.")
@@ -44,7 +48,7 @@ def cmd_add(username, role):
     if role not in roles.ALL_ROLES:
         print("Unknown role %r. Choose one of: %s" % (role, ", ".join(roles.ALL_ROLES)))
         return 2
-    password = _prompt_password()
+    password = _prompt_password(username=username)
     if password is None:
         return 1
     if auth.create_user(username, password, role) is None:
@@ -58,7 +62,7 @@ def cmd_passwd(username):
     if auth.get_user_by_name(username) is None:
         print("No such user: %s" % username)
         return 1
-    password = _prompt_password("New password")
+    password = _prompt_password("New password", username=username)
     if password is None:
         return 1
     auth.set_password(username, password)

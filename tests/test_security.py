@@ -73,7 +73,13 @@ def test_oversized_body_does_not_corrupt_stored_ledger(client):
     good = {"clients": [{"id": "c-1", "name": "Acme"}], "records": [], "log": []}
     assert client.put("/api/state", json=good).status_code == 200
     client.put("/api/state", json={"pad": "A" * (security.MAX_BODY_BYTES + 1024)})
-    assert client.get("/api/state").json()["state"] == good
+    got = client.get("/api/state").json()["state"]
+    # The merge guarantees nextClientSeq/nextRecordSeq are present (backend/
+    # roles.py), even though `good` did not set them -- compare what this test
+    # is actually about: that the oversized PUT changed nothing.
+    assert got["clients"] == good["clients"]
+    assert got["records"] == good["records"]
+    assert got["log"] == good["log"]
 
 
 def test_normal_sized_ledger_still_accepted(client):

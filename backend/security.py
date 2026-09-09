@@ -101,4 +101,24 @@ SECURITY_HEADERS = {
     "Referrer-Policy": "no-referrer",
     # This is private client data; never let a shared cache hold it.
     "Cache-Control": "no-store",
+    # The dashboard uses none of these browser capabilities; refusing them
+    # outright means an XSS that got past the CSP still can't turn the page
+    # into a camera/microphone/location snoop.
+    "Permissions-Policy": ("geolocation=(), camera=(), microphone=(), "
+                          "usb=(), payment=(), interest-cohort=()"),
+    # Isolates this page's browsing context group from anything that opens or
+    # is opened by it, closing off a class of cross-window timing/reference
+    # attacks (e.g. Spectre-style leaks via a hostile pop-up).
+    "Cross-Origin-Opener-Policy": "same-origin",
+    # Nothing here is meant to be embedded or fetched by another origin; there
+    # is no CORS configuration at all, and this says so explicitly rather than
+    # relying on that omission alone.
+    "Cross-Origin-Resource-Policy": "same-origin",
+    # Legacy Flash/PDF cross-domain policy files are not used; refuse them.
+    "X-Permitted-Cross-Domain-Policies": "none",
+    # Ignored by every browser unless the response actually arrived over
+    # HTTPS (RFC 6797), so this is inert on the plain-HTTP localhost default
+    # and takes effect automatically the moment TLS is put in front of this
+    # server -- no separate HTTPS-detection logic needed here.
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
 }

@@ -84,9 +84,14 @@ because anything sent to a browser can be read out of it with dev tools.
 | Change status and deadlines | ✅ | ✅ | ✅ on their own matters |
 | Import / export | ✅ | ✅ | ❌ |
 | Manage clients | ✅ | ✅ | ❌ |
+| Clear all matters / de-dup (bulk_manage) | ✅ | ❌ | ❌ |
 | Manage accounts | ✅ | ❌ | ❌ |
 
-Two consequences worth understanding:
+Bulk, ledger-wide destructive tools are deliberately separate from ordinary
+delete: a trademark admin can remove one matter at a time, but only a super
+admin gets the button that can empty the whole firm's ledger in one click.
+
+Three consequences worth understanding:
 
 - **Financial values are stripped from the payload**, not hidden in the page. A
   trademark admin's browser never receives a fee, so it cannot leak one.
@@ -94,6 +99,17 @@ Two consequences worth understanding:
   ledger; a drafter who can see one matter would otherwise wipe every other
   matter in the firm on their first save. The server applies only the changes
   that role is allowed to make, onto the stored document.
+- **Concurrent saves are reconciled, not last-write-wins.** Every save from an
+  admin is a three-way merge of what they last loaded, what is actually stored
+  now, and what they're trying to save — so one admin's edit doesn't silently
+  revert another's, and two people creating a matter at the same moment never
+  collide on the same reference number (the second is transparently given a
+  new one, and the browser is told). This only works when the browser sends
+  the revision it last loaded (`X-Ledger-Revision`, automatic in this app); a
+  request that omits it falls back to the older, best-effort merge.
+- **An assignment naming an account that doesn't exist (or is suspended) is
+  cleared automatically on save**, rather than silently leaving a matter
+  invisible to every drafter with no warning anywhere.
 
 ### Assignment
 
@@ -189,7 +205,7 @@ In `backend/security.py` and `backend/auth.py`, covered by `tests/`:
 | `GET` | `/api/me` | `{signedIn, username, role, can[]}` |
 | `POST` | `/api/password` | change your own; needs the current one |
 | `GET` | `/api/state` | the ledger, filtered for your role |
-| `PUT` | `/api/state` | merges the changes your role may make |
+| `PUT`  | `/api/state` | merges the changes your role may make; send `X-Ledger-Revision` (the `revision` from your last GET) so concurrent saves are reconciled correctly 
 | `GET` | `/api/assignees` | active accounts, for the assignment dropdown |
 | `GET/POST` | `/api/users` | super admin only |
 | `PATCH/DELETE` | `/api/users/{id}` | super admin only; suspend, change role, remove |

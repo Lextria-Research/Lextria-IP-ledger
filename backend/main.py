@@ -159,14 +159,47 @@ def _cookie_is_secure(request: Request) -> bool:
     return request.headers.get("x-forwarded-proto", "").split(",")[0].strip() == "https"
 
 
+def _client_ip(request: Request) -> str:
+    """Best-effort source address, for throttling and the login history.
+
+    Behind a reverse proxy the direct TCP peer is the proxy itself, not the
+    real client, so X-Forwarded-For (its first, left-most entry -- the
+    original client) is preferred when present. This is only ever used for
+    rate-limiting and an audit trail, never for access control, so a spoofed
+    header at worst pollutes those, rather than granting anything.
+    """
+    forwarded = request.headers.get("x-forwarded-for", "")
+    if forwarded:
+        first = forwarded.split(",")[0].strip()
+        if first:
+            return first
+    return request.client.host if request.client else "unknown"
+
+
 @app.post("/api/login")
 async def login(request: Request):
     payload, error = await json_object(request)
     if error:
         return error
 
-    user, locked_for = auth.authenticate_throttled(
-        payload.get("username"), payload.get("password"))
+    username = payload.get("username")
+    ip = _client_ip(request)
+
+    # A pure request-volume cap, ahead of anything else: no single account has
+    # to reach MAX_FAILURES for this to bite, so it also covers one address
+    # spraying a common password across many different usernames. In-memory
+    # only (see auth.ip_login_wait_seconds) -- nothing to migrate, nothing
+    # written to disk on every attempt.
+    ip_wait = auth.ip_login_wait_seconds(ip)
+    if ip_wait:
+        return JSONResponse(status_code=429, content={
+            "error": "Too many sign-in requests from this address. Try again in %d minute(s)."
+                     % max(1, round(ip_wait / 60)),
+        })
+
+    user, locked_for = auth.authenticate_throttled(username, payload.get("password"))
+    auth.record_login_event(username, success=user is not None, ip=ip)
+
     if user is None:
         if locked_for:
             return JSONResponse(status_code=429, content={
@@ -194,6 +227,38 @@ async def login(request: Request):
         path="/",
     )
     return response
+
+
+@app.get("/api/login-history")
+def login_history(request: Request):
+    """Recent sign-in attempts (success and failure), super admin only.
+
+    The lockout in /api/login stops a brute-force run from succeeding; this is
+    what lets a super admin actually SEE that one was attempted, rather than
+    only ever feeling it as "I got locked out" with no visibility into why.
+    """
+    user = current_user(request)
+    if user is None:
+        return _unauthenticated()
+    if not roles.can(user["role"], "manage_users"):
+        return JSONResponse(status_code=403, content={"error": "Not permitted."})
+    return {"events": auth.recent_login_events(200)}
+
+
+@app.post("/api/sessions/revoke-others")
+def revoke_other_sessions(request: Request):
+    """Sign this account out on every OTHER device, keeping this one signed in.
+
+    Lighter than a password change (which also ends this session): for
+    "I think I left myself logged in somewhere," not "my password may be
+    known to someone else."
+    """
+    user = current_user(request)
+    if user is None:
+        return _unauthenticated()
+    token = request.cookies.get(auth.SESSION_COOKIE)
+    auth.end_other_sessions(user["id"], token)
+    return {"ok": True}
 
 
 @app.post("/api/logout")
@@ -249,6 +314,9 @@ async def add_user(request: Request):
     if len(password) < MIN_PASSWORD_LENGTH:
         return JSONResponse(status_code=400, content={
             "error": "Password must be at least %d characters." % MIN_PASSWORD_LENGTH})
+    weak_reason = auth.is_weak_password(password, username)
+    if weak_reason:
+        return JSONResponse(status_code=400, content={"error": weak_reason})
     if role not in roles.ALL_ROLES:
         return JSONResponse(status_code=400, content={"error": "Unknown role."})
 
@@ -319,6 +387,9 @@ async def change_own_password(request: Request):
     if len(new) < MIN_PASSWORD_LENGTH:
         return JSONResponse(status_code=400, content={
             "error": "New password must be at least %d characters." % MIN_PASSWORD_LENGTH})
+    weak_reason = auth.is_weak_password(new, user["username"])
+    if weak_reason:
+        return JSONResponse(status_code=400, content={"error": weak_reason})
     if auth.authenticate(user["username"], current) is None:
         return JSONResponse(status_code=403,
                             content={"error": "Your current password is not correct."})
@@ -363,12 +434,18 @@ def get_state(request: Request):
 
     Financial fields are stripped from the payload here, not merely hidden in
     the UI — anything sent to the browser is readable from dev tools.
+
+    `revision` identifies exactly which version of the document this is. The
+    client echoes it back on its next PUT (as the X-Ledger-Revision header) so
+    the server can tell a deliberate edit apart from one based on stale data —
+    see roles.merge_for_role and the "baseline" it is given in put_state below.
     """
     user = current_user(request)
     if user is None:
         return {"configured": True, "authorized": False,
                 "authRequired": True, "state": None}
 
+    document, revision = db.load_state_with_revision()
     return {
         "configured": True,
         "authorized": True,
@@ -376,7 +453,8 @@ def get_state(request: Request):
         "user": {"username": user["username"], "role": user["role"],
                  "roleLabel": roles.ROLE_LABELS.get(user["role"], user["role"]),
                  "can": roles.capabilities(user["role"])},
-        "state": roles.redact_for_role(db.load_state(), user["role"], user["username"]),
+        "revision": revision,
+        "state": roles.redact_for_role(document, user["role"], user["username"]),
     }
 
 
@@ -421,19 +499,41 @@ async def put_state(request: Request):
             content={"error": "Request body must be a JSON object (the full ledger state)."},
         )
 
+    # What did this browser last actually load? Looking that up (rather than
+    # trusting the incoming document to represent it) is what lets the merge
+    # tell "I am deliberately changing this" apart from "my copy just predates
+    # someone else's edit" -- see roles.merge_for_role for how each case is
+    # handled. Absent or unparseable means "unknown", which every branch of
+    # the merge has an explicit, documented fallback for.
+    client_revision = None
+    header_value = request.headers.get("x-ledger-revision")
+    if header_value is not None:
+        try:
+            client_revision = int(header_value)
+        except ValueError:
+            client_revision = None
+
     # Serialise read-modify-write: two saves landing together would otherwise
     # each merge onto the same stored document and the later would drop the
     # earlier one's changes.
     with SAVE_LOCK:
         stored = db.load_state()
+        baseline = db.get_document_at_revision(client_revision) if client_revision else None
         try:
-            to_store = roles.merge_for_role(
-                stored, document, user["role"], user["username"])
+            to_store, id_remap = roles.merge_for_role(
+                stored, document, user["role"], user["username"], baseline=baseline)
         except Exception:
             return JSONResponse(
                 status_code=400,
                 content={"error": "Could not apply those changes."},
             )
+
+        # A matter assigned to a name that is not a real, active account is
+        # invisible to every drafter with no warning anywhere else in the app
+        # -- clear it here rather than let that happen silently.
+        active_usernames = [u["username"] for u in auth.list_users() if u["active"]]
+        cleared_assignments = roles.validate_assignments(to_store, active_usernames)
+
         try:
             revision = db.save_state(to_store)
         except Exception:
@@ -442,7 +542,12 @@ async def put_state(request: Request):
                 content={"error": "Could not save to the ledger database."},
             )
 
-    return {"ok": True, "revision": revision}
+    response = {"ok": True, "revision": revision}
+    if id_remap["records"] or id_remap["clients"]:
+        response["idRemap"] = id_remap
+    if cleared_assignments:
+        response["clearedAssignments"] = cleared_assignments
+    return response
 
 
 @app.get("/")

@@ -32,7 +32,11 @@ LEDGER = {
               "assignedTo": "dee"}, **FINANCE),
         dict({"id": "t-002", "clientId": "c-1", "ipType": "copyright",
               "brand": "Handbook", "appno": "CR-1", "status": "cr_filed",
-              "assignedTo": "someone_else"}, **FINANCE),
+              # A real account, not a placeholder -- the server now clears any
+              # assignedTo that is not an active username (roles.validate_
+              # assignments), so a fake name here would be blanked regardless
+              # of the reassignment attempt this test is actually checking.
+              "assignedTo": "tma"}, **FINANCE),
     ],
     "log": [{"ts": "2026-01-01T00:00:00Z", "summary": "seeded"}],
     "nextClientSeq": 2, "nextRecordSeq": 3,
@@ -291,7 +295,7 @@ def test_drafter_cannot_reassign_a_matter_to_themselves(client):
     login(client, "boss", "bosspassword")
     other = [r for r in client.get("/api/state").json()["state"]["records"]
              if r["id"] == "t-002"][0]
-    assert other["assignedTo"] == "someone_else"
+    assert other["assignedTo"] == "tma"
     assert other["status"] == "cr_filed"
 
 

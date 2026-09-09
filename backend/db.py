@@ -98,17 +98,54 @@ def load_state():
     the seed embedded in the page when the backend reports no state, and that
     distinction is what makes a first run show the seed instead of a blank slate.
     """
+    document, _revision = load_state_with_revision()
+    return document
+
+
+def load_state_with_revision():
+    """Return (document, revision). document is None, revision is 0, if
+    nothing has been saved yet."""
     with _connect() as conn:
         row = conn.execute(
-            "SELECT document FROM ledger_state WHERE id = 1"
+            "SELECT document, revision FROM ledger_state WHERE id = 1"
+        ).fetchone()
+    if row is None:
+        return None, 0
+    try:
+        return json.loads(row["document"]), row["revision"]
+    except json.JSONDecodeError:
+        # A corrupt row should not take the whole app down; the client will
+        # fall back to its embedded seed and the bad row stays for inspection.
+        return None, row["revision"]
+
+
+def get_document_at_revision(revision):
+    """The ledger document as it stood at a past revision, or None.
+
+    None means "unavailable" -- either that revision is older than
+    HISTORY_LIMIT and was pruned, or it never existed. Used for three-way
+    merges (see roles.py): comparing what a client last saw against what is
+    stored now is how a concurrent edit is told apart from a stale one.
+    """
+    if revision <= 0:
+        return None
+    with _connect() as conn:
+        current = conn.execute(
+            "SELECT document, revision FROM ledger_state WHERE id = 1"
+        ).fetchone()
+        if current is not None and current["revision"] == revision:
+            try:
+                return json.loads(current["document"])
+            except json.JSONDecodeError:
+                return None
+        row = conn.execute(
+            "SELECT document FROM ledger_history WHERE revision = ?", (revision,)
         ).fetchone()
     if row is None:
         return None
     try:
         return json.loads(row["document"])
     except json.JSONDecodeError:
-        # A corrupt row should not take the whole app down; the client will
-        # fall back to its embedded seed and the bad row stays for inspection.
         return None
 
 
