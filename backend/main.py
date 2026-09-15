@@ -326,6 +326,20 @@ async def add_user(request: Request):
     return {"ok": True}
 
 
+def _clear_stale_assignments():
+    """Drop any matter's assignedTo that no longer names a real, active
+    account, right when an account stops being one -- rather than leaving
+    those matters invisible to every drafter until some unrelated save
+    happens to trigger roles.validate_assignments (see put_state)."""
+    with SAVE_LOCK:
+        stored = db.load_state()
+        if not isinstance(stored, dict):
+            return
+        active_usernames = [u["username"] for u in auth.list_users() if u["active"]]
+        if roles.validate_assignments(stored, active_usernames):
+            db.save_state(stored)
+
+
 @app.delete("/api/users/{user_id}")
 def remove_user(user_id: int, request: Request):
     user = current_user(request)
@@ -338,6 +352,7 @@ def remove_user(user_id: int, request: Request):
                             content={"error": "You cannot delete your own account."})
     if not auth.delete_user(user_id):
         return JSONResponse(status_code=404, content={"error": "No such user."})
+    _clear_stale_assignments()
     return {"ok": True}
 
 
@@ -368,6 +383,8 @@ async def update_user(user_id: int, request: Request):
             return JSONResponse(status_code=400, content={"error": "Unknown role."})
         if not auth.set_role(user_id, payload["role"]):
             return JSONResponse(status_code=404, content={"error": "No such user."})
+    if payload.get("active") is False:
+        _clear_stale_assignments()
     return {"ok": True}
 
 

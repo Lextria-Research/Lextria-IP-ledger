@@ -66,7 +66,7 @@ FINANCIAL_FIELDS = (
 # delete the record of a missed deadline -- on a legal ledger that is the most
 # damaging thing a restricted account could do. The server appends timeline
 # entries itself instead (see _stage_entry).
-DRAFTER_EDITABLE_FIELDS = ("status", "actionDate", "action")
+DRAFTER_EDITABLE_FIELDS = ("status", "actionDate", "action", "renewDate")
 
 # Most log entries one save can add. A save is one user action; anything
 # wildly beyond this is a client bug or an attempt to flood the history.
@@ -494,16 +494,23 @@ def _merged_log(base, incoming, username=""):
     stored_log = base.get("log", []) or []
     incoming_log = incoming.get("log", []) or []
     known = {(e.get("ts"), e.get("summary")) for e in stored_log}
-    known_summaries = {e.get("summary") for e in stored_log}
 
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
     fresh = []
+    seen_this_batch = set()
     for entry in incoming_log:
         if not isinstance(entry, dict):
             continue
         summary = entry.get("summary")
-        if (entry.get("ts"), summary) in known or summary in known_summaries:
+        # (ts, summary) catches a client re-sending an entry it already has
+        # stamped from a prior save (a retry, or the log it mirrored back).
+        # A summary seen only elsewhere in the whole stored history is NOT
+        # treated as a duplicate -- the same transition can legitimately
+        # happen twice for a matter, and text-matching against all of history
+        # would silently drop the second, real event.
+        if (entry.get("ts"), summary) in known or summary in seen_this_batch:
             continue
+        seen_this_batch.add(summary)
         fresh.append({"ts": now, "summary": summary, "by": username})
         if len(fresh) >= MAX_NEW_LOG_ENTRIES:
             break
