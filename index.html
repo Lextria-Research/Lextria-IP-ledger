@@ -1035,12 +1035,12 @@
   }
   function clientById(id) {
     var found = null;
-    state.clients.forEach(function (c) { if (c.id === id) found = c; });
+    state.clients.forEach(function (c) { if (String(c.id) === String(id)) found = c; });
     return found;
   }
   function recordById(id) {
     var found = null;
-    state.records.forEach(function (r) { if (r.id === id) found = r; });
+    state.records.forEach(function (r) { if (String(r.id) === String(id)) found = r; });
     return found;
   }
   function fmtDate(iso) {
@@ -1868,6 +1868,7 @@
     });
     html += '</div></div>';
     html += '<div class="toolbar-right">';
+    html += '<button class="btn btn-secondary" data-action="open-misc-form" title="Log Statutory Form (TM-M, TM-P, TM-R, Form-3, Form-4...)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>Log Statutory Form</button>';
     html += '<button class="btn btn-secondary" data-action="open-export"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21V9m0 0-4 4m4-4 4 4M4 7V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2"/></svg>Export</button>';
     if (!isReadOnly) {
       html += '<button class="btn btn-secondary" data-action="open-import"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>Import</button>';
@@ -2614,8 +2615,20 @@
     renderModal();
   }
   function openMiscFormModal(recordId, filingIdToEdit, prefillFormCode) {
-    var r = recordById(recordId);
-    if (!r) return;
+    var targetId = recordId;
+    if (!targetId || !recordById(targetId)) {
+      if (view.expandedId && recordById(view.expandedId)) {
+        targetId = view.expandedId;
+      } else {
+        var matchType = state.records.filter(function (x) { return x.ipType === view.ipType; });
+        targetId = matchType.length ? matchType[0].id : (state.records[0] ? state.records[0].id : null);
+      }
+    }
+    if (!targetId || !recordById(targetId)) {
+      toast('Please add an application to the ledger first before logging statutory forms.');
+      return;
+    }
+    var r = recordById(targetId);
     var filing = null;
     if (filingIdToEdit && r.miscFilings) {
       for (var i = 0; i < r.miscFilings.length; i++) {
@@ -2628,7 +2641,8 @@
     var defaultForm = prefillFormCode || (r.ipType === 'design' ? 'Form-3' : 'TM-M');
     modalState = {
       mode: 'misc-form',
-      recordId: recordId,
+      recordId: targetId,
+      allowRecordSelect: !filingIdToEdit,
       filingId: filing ? filing.id : null,
       draft: filing ? JSON.parse(JSON.stringify(filing)) : {
         formNumber: defaultForm,
@@ -2676,18 +2690,34 @@
   function renderMiscFormModal() {
     var r = recordById(modalState.recordId);
     if (!r) return '';
+    var client = clientById(r.clientId);
     var d = modalState.draft;
     var isEdit = !!modalState.filingId;
     var formsList = STATUTORY_FORMS[r.ipType] || STATUTORY_FORMS.trademark;
     var isTmR = (d.formNumber || '').toUpperCase().indexOf('TM-R') !== -1;
     var isForm3 = (d.formNumber || '').toUpperCase().indexOf('FORM-3') !== -1;
 
-    var html = '<div class="overlay" data-action="overlay-close"><div class="modal" role="dialog" aria-modal="true" style="max-width:580px;">';
-    html += '<div class="modal-head"><div><h2 style="margin:0 0 4px;">' + (isEdit ? 'Edit Statutory Form' : 'Log Miscellaneous Form') + '</h2>' +
-      '<p class="sub" style="margin:0;">' + escapeHtml(r.brand) + ' (' + escapeHtml(r.appno || 'No App No') + ') &bull; ' + escapeHtml(ipConfig(r.ipType).label) + '</p></div>' +
-      '<button class="modal-close" data-action="close-modal" aria-label="Close">✕</button></div>';
+    var html = '<div class="modal-overlay" data-action="overlay-close"><div class="modal" role="dialog" aria-modal="true" style="max-width:580px;">';
+    html += '<div class="modal-header"><div><h2>' + (isEdit ? 'Edit Statutory Form' : 'Log Miscellaneous Form') + '</h2>' +
+      '<p style="margin:2px 0 0;font-size:12.5px;color:var(--ink-muted);"><strong style="color:var(--ink);">' + escapeHtml(r.brand) + '</strong> (' + escapeHtml(r.appno || 'No App #') + ')' + (client ? ' &middot; ' + escapeHtml(client.name) : '') + ' &bull; ' + escapeHtml(ipConfig(r.ipType).label) + '</p></div>' +
+      '<button class="btn-ghost" data-action="close-modal" aria-label="Close">✕</button></div>';
 
     html += '<div class="modal-body">';
+
+    // Matter picker if opened generally
+    if (modalState.allowRecordSelect) {
+      var candidateRecords = state.records.filter(function (x) { return x.ipType === r.ipType; });
+      if (candidateRecords.length > 1) {
+        html += '<div class="field"><label>Select Application / Matter <span style="color:var(--critical);">*</span></label>';
+        html += '<select data-misc-record-select>';
+        candidateRecords.forEach(function (cr) {
+          var cl = clientById(cr.clientId);
+          html += '<option value="' + escapeHtml(cr.id) + '"' + (String(cr.id) === String(r.id) ? ' selected' : '') + '>' +
+            escapeHtml(cr.brand) + ' (' + escapeHtml(cr.appno || 'No App #') + ')' + (cl ? ' &bull; ' + escapeHtml(cl.name) : '') + '</option>';
+        });
+        html += '</select></div>';
+      }
+    }
 
     // Quick Select Buttons
     html += '<div class="field"><label>Select Common Statutory Form</label>';
@@ -2741,10 +2771,11 @@
 
     html += '</div>';
 
-    html += '<div class="modal-foot">' +
+    html += '<div class="modal-footer">' +
       '<button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button>' +
+      '<div class="right-actions">' +
       '<button type="button" class="btn btn-primary" data-action="save-misc-form">' + (isEdit ? 'Save Changes' : 'Log Form') + '</button>' +
-      '</div>';
+      '</div></div>';
 
     html += '</div></div>';
     return html;
@@ -2766,7 +2797,7 @@
     var newState = JSON.parse(JSON.stringify(state));
     var r = null;
     for (var i = 0; i < newState.records.length; i++) {
-      if (newState.records[i].id === modalState.recordId) {
+      if (String(newState.records[i].id) === String(modalState.recordId)) {
         r = newState.records[i];
         break;
       }
@@ -2791,7 +2822,7 @@
     if (modalState.filingId) {
       var foundIdx = -1;
       for (var j = 0; j < r.miscFilings.length; j++) {
-        if (r.miscFilings[j].id === modalState.filingId) {
+        if (String(r.miscFilings[j].id) === String(modalState.filingId)) {
           foundIdx = j;
           break;
         }
@@ -2829,13 +2860,13 @@
     var newState = JSON.parse(JSON.stringify(state));
     var r = null;
     for (var i = 0; i < newState.records.length; i++) {
-      if (newState.records[i].id === recordId) {
+      if (String(newState.records[i].id) === String(recordId)) {
         r = newState.records[i];
         break;
       }
     }
     if (!r || !r.miscFilings) return;
-    r.miscFilings = r.miscFilings.filter(function (f) { return f.id !== filingId; });
+    r.miscFilings = r.miscFilings.filter(function (f) { return String(f.id) !== String(filingId); });
     persist(newState, 'Removed statutory form entry.');
   }
 
@@ -4852,6 +4883,13 @@
       if (el.matches('[data-action="dashboard-change-client"]')) {
         view.dashboardClientId = el.value;
         renderAll();
+        return;
+      }
+      if (el.matches('[data-misc-record-select]')) {
+        if (modalState && modalState.mode === 'misc-form') {
+          modalState.recordId = el.value;
+          renderModal();
+        }
         return;
       }
       if (el.matches('[data-misc-field]')) {
