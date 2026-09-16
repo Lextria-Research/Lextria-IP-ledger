@@ -476,7 +476,79 @@
   .backend-prompt-card p { font-size: 12.5px; color: var(--ink-secondary); margin: 0 0 12px; line-height: 1.45; }
   .backend-prompt-close { position: absolute; top: 12px; right: 14px; background: none; border: none; cursor: pointer;
     color: var(--ink-muted); font-size: 13px; line-height: 1; padding: 2px; }
-  .backend-prompt-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  /* ---------- Statutory Renewal Engine & Badges ---------- */
+  .renewal-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700;
+    padding: 2px 7px; border-radius: 6px; letter-spacing: 0.02em; text-transform: uppercase; white-space: nowrap; }
+  .renewal-badge.phase-active { background: color-mix(in oklab, var(--good) 14%, var(--surface)); color: var(--good); border: 1px solid color-mix(in oklab, var(--good) 30%, transparent); }
+  .renewal-badge.phase-upcoming { background: color-mix(in oklab, var(--warning) 14%, var(--surface)); color: var(--warning); border: 1px solid color-mix(in oklab, var(--warning) 35%, transparent); }
+  .renewal-badge.phase-grace { background: color-mix(in oklab, var(--serious) 15%, var(--surface)); color: var(--serious); border: 1px solid color-mix(in oklab, var(--serious) 35%, transparent); }
+  .renewal-badge.phase-restoration { background: color-mix(in oklab, var(--critical) 15%, var(--surface)); color: var(--critical); border: 1px solid color-mix(in oklab, var(--critical) 35%, transparent); }
+  .renewal-badge.phase-lapsed { background: var(--surface-2); color: var(--ink-muted); border: 1px solid var(--border-strong); }
+  .renewal-badge.phase-max-term { background: color-mix(in oklab, var(--accent) 15%, var(--surface)); color: var(--accent); border: 1px solid color-mix(in oklab, var(--accent) 30%, transparent); }
+  .renewal-badge.phase-public-domain { background: var(--surface-2); color: var(--critical); border: 1px solid color-mix(in oklab, var(--critical) 30%, transparent); }
+
+  .renewal-cell { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .renewal-date-val { font-family: "IBM Plex Mono", monospace; font-size: 12.5px; font-weight: 600; color: var(--ink); }
+
+  /* Statutory Engine Callout Banner */
+  .statutory-callout { background: var(--surface); border: 1px solid var(--border); border-radius: 11px; padding: 13px 16px;
+    margin-bottom: 14px; box-shadow: var(--shadow); display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .statutory-callout-info { display: flex; flex-direction: column; gap: 4px; }
+  .statutory-callout-title { font-size: 13.5px; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .statutory-callout-sub { font-size: 12px; color: var(--ink-secondary); line-height: 1.4; }
+  .statutory-callout-meta { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: var(--ink-muted); }
+
+  /* Statutory Dates Section in Modal */
+  .statutory-dates-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
+  .statutory-card-title { font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .renewal-engine-preview { margin-top: 10px; padding: 10px 12px; border-radius: 8px; font-size: 12px; line-height: 1.4; }
+  .renewal-engine-hint { font-size: 11.5px; color: var(--ink-muted); margin-top: 6px; font-style: italic; }
+
+  /* ---------- Miscellaneous Filings & Timeline Layout ---------- */
+  .timeline-section-wrap { display: flex; flex-direction: column; gap: 12px; }
+  .timeline-toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 4px; }
+  .timeline-mode-toggle { display: flex; gap: 2px; background: var(--surface-2); padding: 2px; border-radius: 7px; border: 1px solid var(--border); }
+  .timeline-mode-btn { font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: 5px; border: none; background: transparent; color: var(--ink-secondary); cursor: pointer; }
+  .timeline-mode-btn.active { background: var(--surface); color: var(--accent); box-shadow: var(--shadow); }
+
+  .timeline-dual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 880px) { .timeline-dual-grid { grid-template-columns: 1fr; } }
+
+  .misc-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; box-shadow: var(--shadow); }
+  .misc-panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+  .misc-panel-title { font-size: 13.5px; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: 8px; }
+  .misc-count-badge { font-family: "IBM Plex Mono", monospace; font-size: 11px; font-weight: 600; background: var(--surface-2);
+    border: 1px solid var(--border); color: var(--ink-secondary); padding: 1px 7px; border-radius: 999px; }
+  .misc-empty { padding: 18px 16px; background: var(--surface-2); border: 1px dashed var(--border-strong); border-radius: 9px;
+    font-size: 12px; color: var(--ink-muted); text-align: center; line-height: 1.5; }
+  .misc-list { display: flex; flex-direction: column; gap: 10px; }
+  .misc-card { background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 11px 13px;
+    border-left: 3px solid var(--accent); box-shadow: var(--shadow); transition: border-color 0.15s ease; }
+  .misc-card:hover { border-color: var(--border-strong); border-left-color: var(--accent-strong); }
+  .misc-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+  .form-pill { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; font-weight: 700; padding: 2px 7px;
+    border-radius: 5px; background: color-mix(in oklab, var(--accent) 12%, var(--surface)); color: var(--accent); border: 1px solid color-mix(in oklab, var(--accent) 28%, transparent); }
+  .cbr-tag { font-family: "IBM Plex Mono", monospace; font-size: 11px; padding: 2px 6px; border-radius: 5px;
+    background: var(--surface-2); color: var(--ink-secondary); border: 1px solid var(--border); }
+  .misc-purpose { font-size: 12.5px; font-weight: 600; color: var(--ink); margin-bottom: 4px; line-height: 1.4; }
+  .misc-notes { font-size: 12px; color: var(--ink-secondary); margin-bottom: 6px; line-height: 1.4; white-space: pre-line; background: var(--surface-2); padding: 6px 9px; border-radius: 6px; }
+  .misc-card-footer { display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; color: var(--ink-muted); flex-wrap: wrap; gap: 6px; }
+  .misc-card-actions { display: flex; gap: 6px; }
+
+  /* Unified timeline misc styling */
+  .timeline-item.is-misc .timeline-marker { border-color: #7c3aed; background: var(--surface); border-width: 3px; }
+  .timeline-item.is-misc .timeline-card { border-left: 3px solid #7c3aed; }
+
+  /* Misc Form Modal */
+  .quick-forms-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .quick-form-btn { font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 6px;
+    background: var(--surface); border: 1px solid var(--border-strong); color: var(--ink); cursor: pointer; }
+  .quick-form-btn:hover { background: var(--surface-2); border-color: var(--accent); }
+  .quick-form-btn.active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .form-linkage-box { background: color-mix(in oklab, var(--accent) 8%, var(--surface)); border: 1px solid color-mix(in oklab, var(--accent) 30%, transparent);
+    border-radius: 9px; padding: 12px 14px; margin-top: 14px; }
+  .form-linkage-label { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--ink); cursor: pointer; font-weight: 500; }
+  .form-linkage-label input { width: 16px; height: 16px; accent-color: var(--accent); }
 </style>
 
 <div class="app" id="app-root"></div>
@@ -644,9 +716,7 @@
     return d.toISOString().slice(0, 10);
   }
   function addYears(iso, years) {
-    var d = new Date((iso || todayIso()) + 'T00:00:00Z');
-    d.setUTCFullYear(d.getUTCFullYear() + years);
-    return d.toISOString().slice(0, 10);
+    return addYearsSafe(iso, years);
   }
 
   function statusDef(key) {
@@ -1039,6 +1109,315 @@
     if (months >= 1) return 'in ' + months + 'mo';
     return 'in ' + days + 'd';
   }
+
+  /* ===================== Statutory Renewal Engine & Forms ===================== */
+  function addYearsSafe(iso, years) {
+    if (!iso) return null;
+    var s = String(iso).trim().slice(0, 10);
+    var parts = s.split('-');
+    if (parts.length < 3) return null;
+    var y = parseInt(parts[0], 10) + years;
+    var m = parseInt(parts[1], 10);
+    var d = parseInt(parts[2], 10);
+    if (isNaN(y) || isNaN(m) || isNaN(d)) return null;
+    // Leap year check: if Feb 29 and destination year is not leap, clamp to Feb 28
+    if (m === 2 && d === 29) {
+      var isLeap = (y % 4 === 0 && y % 100 !== 0) || (y % 400 === 0);
+      if (!isLeap) d = 28;
+    }
+    var mm = m < 10 ? '0' + m : '' + m;
+    var dd = d < 10 ? '0' + d : '' + d;
+    return y + '-' + mm + '-' + dd;
+  }
+
+  function addMonthsSafe(iso, months) {
+    if (!iso) return null;
+    var s = String(iso).trim().slice(0, 10);
+    var parts = s.split('-');
+    if (parts.length < 3) return null;
+    var y = parseInt(parts[0], 10);
+    var m = parseInt(parts[1], 10) + months;
+    var d = parseInt(parts[2], 10);
+    if (isNaN(y) || isNaN(m) || isNaN(d)) return null;
+    while (m > 12) { y++; m -= 12; }
+    while (m < 1) { y--; m += 12; }
+    var maxDays = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    if (d > maxDays) d = maxDays;
+    var mm = m < 10 ? '0' + m : '' + m;
+    var dd = d < 10 ? '0' + d : '' + d;
+    return y + '-' + mm + '-' + dd;
+  }
+
+  var STATUTORY_FORMS = {
+    trademark: [
+      { code: 'TM-M', name: 'Form TM-M', desc: 'Application for amendment / extension of time / clerical error / certified copy' },
+      { code: 'TM-P', name: 'Form TM-P', desc: 'Subsequent proprietor / assignment / transmission / merger' },
+      { code: 'TM-R', name: 'Form TM-R', desc: 'Renewal or restoration of a registered trade mark' },
+      { code: 'TM-O', name: 'Form TM-O', desc: 'Notice of opposition / counter-statement / rectification' },
+      { code: 'TM-A', name: 'Form TM-A', desc: 'Application for registration of a trade mark' },
+      { code: 'Other', name: 'Other / Petition', desc: 'Incidental petition / representation / hearing submission' }
+    ],
+    design: [
+      { code: 'Form-1', name: 'Form-1', desc: 'Application for registration of design' },
+      { code: 'Form-3', name: 'Form-3', desc: 'Application for extension of copyright in design (5 years)' },
+      { code: 'Form-4', name: 'Form-4', desc: 'Application for restoration of lapsed design (Section 12)' },
+      { code: 'Form-18', name: 'Form-18', desc: 'Request for certified copy or inspection of register' },
+      { code: 'Form-24', name: 'Form-24', desc: 'Request for alteration of name or address of proprietor' },
+      { code: 'Form-30', name: 'Form-30', desc: 'Form of authorization of an agent / Power of Attorney' },
+      { code: 'Other', name: 'Other / Petition', desc: 'Incidental petition or statutory request' }
+    ],
+    copyright: [
+      { code: 'Form-XIV', name: 'Form-XIV', desc: 'Application for registration of copyright' },
+      { code: 'Reply-Discrepancy', name: 'Discrepancy Reply', desc: 'Reply to discrepancy letter' },
+      { code: 'Other', name: 'Other / Amendment', desc: 'Incidental filing or correction' }
+    ]
+  };
+
+  var MISC_FORM_STATUSES = [
+    { key: 'Filed', label: 'Filed', tier: 'info' },
+    { key: 'Allowed', label: 'Allowed / Accepted', tier: 'good' },
+    { key: 'Objected', label: 'Objected', tier: 'warning' },
+    { key: 'Closed', label: 'Closed / Disposed', tier: 'neutral' }
+  ];
+
+  function evaluateTrademarkPhases(targetExpiry, today, r, baseDate, isRenewalCycle) {
+    var windowOpen = addYearsSafe(targetExpiry, -1);
+    var graceEnd = addMonthsSafe(targetExpiry, 6);
+    var restorationEnd = addMonthsSafe(targetExpiry, 12);
+    var daysToExpiry = daysUntil(targetExpiry);
+
+    if (today < windowOpen) {
+      return {
+        ipType: 'trademark',
+        baseDate: baseDate,
+        isRenewalCycle: isRenewalCycle,
+        nextRenewalDate: targetExpiry,
+        targetExpiry: targetExpiry,
+        windowOpen: windowOpen,
+        graceEnd: graceEnd,
+        restorationEnd: restorationEnd,
+        daysLeft: daysToExpiry,
+        phase: 'active',
+        tier: 'good',
+        label: 'Protected / Active',
+        sublabel: 'Statutory expiry: ' + fmtDate(targetExpiry) + ' (window opens ' + fmtDate(windowOpen) + ')',
+        actionRequired: null
+      };
+    } else if (today <= targetExpiry) {
+      return {
+        ipType: 'trademark',
+        baseDate: baseDate,
+        isRenewalCycle: isRenewalCycle,
+        nextRenewalDate: targetExpiry,
+        targetExpiry: targetExpiry,
+        windowOpen: windowOpen,
+        graceEnd: graceEnd,
+        restorationEnd: restorationEnd,
+        daysLeft: daysToExpiry,
+        phase: 'upcoming',
+        tier: 'warning',
+        label: 'Upcoming (Within 1y)',
+        sublabel: 'Statutory deadline: ' + fmtDate(targetExpiry) + ' (File Form TM-R)',
+        actionRequired: 'File renewal (Form TM-R) before statutory expiration'
+      };
+    } else if (today <= graceEnd) {
+      return {
+        ipType: 'trademark',
+        baseDate: baseDate,
+        isRenewalCycle: isRenewalCycle,
+        nextRenewalDate: graceEnd,
+        targetExpiry: targetExpiry,
+        windowOpen: windowOpen,
+        graceEnd: graceEnd,
+        restorationEnd: restorationEnd,
+        daysLeft: daysUntil(graceEnd),
+        phase: 'grace',
+        tier: 'serious',
+        label: 'Grace Period (Surcharge)',
+        sublabel: 'Expired on ' + fmtDate(targetExpiry) + '. Surcharge window ends ' + fmtDate(graceEnd),
+        actionRequired: 'File renewal with surcharge under Section 25(3)'
+      };
+    } else if (today <= restorationEnd) {
+      return {
+        ipType: 'trademark',
+        baseDate: baseDate,
+        isRenewalCycle: isRenewalCycle,
+        nextRenewalDate: restorationEnd,
+        targetExpiry: targetExpiry,
+        windowOpen: windowOpen,
+        graceEnd: graceEnd,
+        restorationEnd: restorationEnd,
+        daysLeft: daysUntil(restorationEnd),
+        phase: 'restoration',
+        tier: 'critical',
+        label: 'Restoration Required (6-12m)',
+        sublabel: 'Removed from register. Restoration window closes ' + fmtDate(restorationEnd),
+        actionRequired: 'File application for restoration & renewal under Section 25(4)'
+      };
+    } else {
+      return {
+        ipType: 'trademark',
+        baseDate: baseDate,
+        isRenewalCycle: isRenewalCycle,
+        nextRenewalDate: targetExpiry,
+        targetExpiry: targetExpiry,
+        windowOpen: windowOpen,
+        graceEnd: graceEnd,
+        restorationEnd: restorationEnd,
+        daysLeft: daysToExpiry,
+        phase: 'lapsed',
+        tier: 'critical',
+        label: 'Lapsed / Dead (>1y)',
+        sublabel: 'Expired > 1 year without renewal. Statutorily removed and cannot be restored.',
+        actionRequired: 'Cannot be restored; fresh application required'
+      };
+    }
+  }
+
+  function calculateRenewalDetails(r) {
+    if (!r) return null;
+    var ipType = r.ipType || 'trademark';
+    if (ipType !== 'trademark' && ipType !== 'design') return null;
+    var today = todayIso();
+
+    if (ipType === 'trademark') {
+      // Statutory preference (Section 23(1) & 25(1)):
+      // If renewed previously: lastRenewalDate is base.
+      // Else: priorityDate > filingDate > registrationDate > legacy renewDate
+      var baseDate = null;
+      var isRenewalCycle = false;
+      if (r.lastRenewalDate) {
+        baseDate = r.lastRenewalDate;
+        isRenewalCycle = true;
+      } else if (r.priorityDate) {
+        baseDate = r.priorityDate;
+      } else if (r.filingDate) {
+        baseDate = r.filingDate;
+      } else if (r.registrationDate) {
+        baseDate = r.registrationDate;
+      } else if (r.renewDate) {
+        return evaluateTrademarkPhases(r.renewDate, today, r, null, false);
+      } else {
+        return null;
+      }
+
+      var nextRenewalDate = addYearsSafe(baseDate, 10);
+      return evaluateTrademarkPhases(nextRenewalDate, today, r, baseDate, isRenewalCycle);
+    }
+
+    if (ipType === 'design') {
+      // Indian Designs Act, 2000 (Section 5(6), 11 & 12):
+      // Priority Date > Filing Date > Registration Date
+      var baseDate = r.priorityDate || r.filingDate || r.registrationDate;
+      if (!baseDate && r.renewDate) {
+        baseDate = r.renewDate;
+      }
+      if (!baseDate) return null;
+
+      var isExtended = !!r.designExtended;
+
+      if (isExtended) {
+        // Form-3 Extension of Copyright granted: Max Term = 15 years total
+        var maxTermExpiry = addYearsSafe(baseDate, 15);
+        var isExpired = today > maxTermExpiry;
+        return {
+          ipType: 'design',
+          baseDate: baseDate,
+          isExtended: true,
+          nextRenewalDate: maxTermExpiry,
+          targetExpiry: maxTermExpiry,
+          daysLeft: daysUntil(maxTermExpiry),
+          phase: isExpired ? 'public_domain' : 'max_term',
+          tier: isExpired ? 'critical' : 'info',
+          label: isExpired ? 'Term Expired / Public Domain' : 'Max Term Reached (15 Years)',
+          sublabel: isExpired ? 'Statutory 15-year term expired on ' + fmtDate(maxTermExpiry) : 'Full 15-year statutory term active. Expires ' + fmtDate(maxTermExpiry) + ' (no further renewal)',
+          canExtend: false,
+          canRestore: false
+        };
+      } else {
+        // Initial 10-year term (Section 11(1))
+        var initialExpiry = addYearsSafe(baseDate, 10);
+        var windowOpen = addYearsSafe(initialExpiry, -1); // 1 year prior to 10-year expiry
+        var restorationEnd = addYearsSafe(initialExpiry, 1); // 1 year post-expiry (Section 12)
+        var daysToExpiry = daysUntil(initialExpiry);
+
+        if (today < windowOpen) {
+          return {
+            ipType: 'design',
+            baseDate: baseDate,
+            isExtended: false,
+            nextRenewalDate: initialExpiry,
+            targetExpiry: initialExpiry,
+            windowOpen: windowOpen,
+            restorationEnd: restorationEnd,
+            daysLeft: daysToExpiry,
+            phase: 'active',
+            tier: 'good',
+            label: 'Initial 10-Yr Term Active',
+            sublabel: 'Initial term expires ' + fmtDate(initialExpiry) + '. Extension window opens ' + fmtDate(windowOpen),
+            canExtend: false,
+            canRestore: false
+          };
+        } else if (today <= initialExpiry) {
+          return {
+            ipType: 'design',
+            baseDate: baseDate,
+            isExtended: false,
+            nextRenewalDate: initialExpiry,
+            targetExpiry: initialExpiry,
+            windowOpen: windowOpen,
+            restorationEnd: restorationEnd,
+            daysLeft: daysToExpiry,
+            phase: 'upcoming',
+            tier: 'warning',
+            label: 'Form-3 Window Open',
+            sublabel: 'File Form-3 for 5-year extension before ' + fmtDate(initialExpiry) + ' (Section 11(2))',
+            canExtend: true,
+            canRestore: false
+          };
+        } else if (today <= restorationEnd) {
+          return {
+            ipType: 'design',
+            baseDate: baseDate,
+            isExtended: false,
+            nextRenewalDate: restorationEnd,
+            targetExpiry: initialExpiry,
+            windowOpen: windowOpen,
+            restorationEnd: restorationEnd,
+            daysLeft: daysUntil(restorationEnd),
+            phase: 'restoration',
+            tier: 'serious',
+            label: 'Restoration Window (Sec. 12)',
+            sublabel: 'Initial term ceased on ' + fmtDate(initialExpiry) + '. File Form-4 for restoration by ' + fmtDate(restorationEnd),
+            canExtend: false,
+            canRestore: true
+          };
+        } else {
+          return {
+            ipType: 'design',
+            baseDate: baseDate,
+            isExtended: false,
+            nextRenewalDate: initialExpiry,
+            targetExpiry: initialExpiry,
+            windowOpen: windowOpen,
+            restorationEnd: restorationEnd,
+            daysLeft: daysToExpiry,
+            phase: 'public_domain',
+            tier: 'critical',
+            label: 'Term Expired / Public Domain',
+            sublabel: 'Lapsed > 1 year post-expiry without restoration. Design has entered public domain.',
+            canExtend: false,
+            canRestore: false
+          };
+        }
+      }
+    }
+  }
+
+  function renderRenewalBadge(ren) {
+    if (!ren) return '';
+    return '<span class="renewal-badge phase-' + ren.phase + '" title="' + escapeHtml(ren.sublabel || '') + '">' + escapeHtml(ren.label) + '</span>';
+  }
   function nextRecordId(st) {
     var s = st || state;
     var max = 0;
@@ -1345,7 +1724,33 @@
       if (r.actionDate) {
         items.push({ record: r, client: client, kind: 'action', label: r.action || statusDef(r.status).suggestedAction || 'Action required', date: r.actionDate });
       }
-      if (r.renewDate) {
+      var ren = calculateRenewalDetails(r);
+      if (ren && ren.nextRenewalDate) {
+        var days = ren.daysLeft;
+        // Show in deadlines if upcoming, in grace period, in restoration window, or within 365 days
+        var isUrgentOrDue = (ren.phase === 'upcoming' || ren.phase === 'grace' || ren.phase === 'restoration' || (days >= 0 && days <= 365));
+        if (isUrgentOrDue) {
+          var renLabel = 'File renewal';
+          if (r.ipType === 'design') {
+            if (ren.phase === 'restoration') renLabel = 'Restoration window (Sec. 12 / Form-4)';
+            else if (ren.phase === 'upcoming') renLabel = 'File Form-3 (5-year extension)';
+            else renLabel = 'Design 10-year renewal';
+          } else {
+            if (ren.phase === 'grace') renLabel = 'Renewal (Grace period + surcharge)';
+            else if (ren.phase === 'restoration') renLabel = 'Restoration & Renewal (Form TM-R)';
+            else renLabel = 'File renewal (Form TM-R)';
+          }
+          items.push({
+            record: r,
+            client: client,
+            kind: 'renewal',
+            label: renLabel,
+            date: ren.nextRenewalDate,
+            phase: ren.phase,
+            tier: ren.tier
+          });
+        }
+      } else if (r.renewDate) {
         items.push({ record: r, client: client, kind: 'renewal', label: 'File renewal', date: r.renewDate });
       }
     });
@@ -1585,7 +1990,7 @@
     cols.forEach(function (c) {
       html += '<th data-sort="' + c[0] + '"' + (view.sortKey === c[0] ? ' data-active' : '') + '><button data-action="sort" data-key="' + c[0] + '">' + escapeHtml(c[1]) + ' <span class="arrow">' + (view.sortKey === c[0] ? (view.sortDir === 1 ? '↑' : '↓') : '↕') + '</span></button></th>';
     });
-    html += '<th style="width:70px">Actions</th>';
+    html += '<th style="width:88px">Actions</th>';
     html += '</tr></thead><tbody>';
 
     if (!pageRows.length) {
@@ -1603,9 +2008,24 @@
       html += '<td class="num">' + escapeHtml(r.appno) + '</td>';
       if (cfg.markTypeMode !== 'hidden') html += '<td>' + escapeHtml(r.markType) + '</td>';
       html += '<td>' + renderStatusSelect(r) + '</td>';
-      if (cfg.hasRenewal) html += '<td class="num">' + (fmtDate(r.renewDate) || '—') + '</td>';
+      if (cfg.hasRenewal) {
+        var ren = calculateRenewalDetails(r);
+        var dateVal = (ren && ren.nextRenewalDate) ? ren.nextRenewalDate : r.renewDate;
+        if (dateVal) {
+          html += '<td class="num renewal-cell">' +
+            '<span class="renewal-date-val">' + (fmtDate(dateVal) || escapeHtml(dateVal)) + '</span>' +
+            (ren ? renderRenewalBadge(ren) : '') +
+            '</td>';
+        } else {
+          html += '<td class="num" style="color:var(--ink-muted);">—</td>';
+        }
+      }
       html += '<td class="row-actions">' +
-        '<button class="btn-ghost" data-action="open-edit" data-id="' + r.id + '" title="Edit"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>' +
+        '<button class="btn-ghost" data-action="open-misc-form" data-record-id="' + r.id + '" title="Log Statutory Form (' + (r.ipType === 'design' ? 'Form-3, Form-4, etc.' : 'TM-M, TM-P, etc.') + ')" style="position:relative;">' +
+        '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>' +
+        (r.miscFilings && r.miscFilings.length ? '<span class="count-pill" style="position:absolute;top:-4px;right:-4px;font-size:9.5px;padding:1px 4px;line-height:1;">' + r.miscFilings.length + '</span>' : '') +
+        '</button>' +
+        '<button class="btn-ghost" data-action="open-edit" data-id="' + r.id + '" title="Edit matter"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>' +
         '</td>';
       html += '</tr>';
       if (isOpen) {
@@ -1629,57 +2049,243 @@
 
   function renderRecordTimeline(r) {
     var timeline = (r && r.timeline && Array.isArray(r.timeline)) ? r.timeline : [];
-    var count = timeline.length;
-    var html = '<div class="detail-block timeline-block span-2">';
-    html += '<div class="timeline-block-head">';
-    html += '<div class="timeline-title-wrap">';
-    html += '<h4>Audit History / Stage Timeline</h4>';
-    html += '<span class="timeline-badge">' + count + ' transition' + (count === 1 ? '' : 's') + '</span>';
-    html += '</div>';
-    html += '</div>';
+    var miscFilings = (r && r.miscFilings && Array.isArray(r.miscFilings)) ? r.miscFilings : [];
+    var stageCount = timeline.length;
+    var miscCount = miscFilings.length;
+    var viewMode = (view.timelineViews && view.timelineViews[r.id]) || 'dual';
 
-    if (!timeline.length) {
-      html += '<div class="timeline-empty"><span style="font-size:16px;">⏳</span> No stage transitions recorded yet for this matter. When this matter advances in status, transition dates and remarks will be tracked here.</div>';
-      html += '</div>';
-      return html;
+    var ren = calculateRenewalDetails(r);
+
+    var html = '<div class="detail-block span-2 timeline-section-wrap">';
+
+    // 1. Statutory Renewal Engine Callout Banner (if eligible)
+    if (ren && ren.nextRenewalDate) {
+      html += '<div class="statutory-callout">' +
+        '<div class="statutory-callout-info">' +
+        '<div class="statutory-callout-title">' +
+        '<span>Statutory Next Renewal / Extension: <strong>' + fmtDate(ren.nextRenewalDate) + '</strong> (' + humanCountdown(ren.daysLeft) + ')</span>' +
+        renderRenewalBadge(ren) +
+        '</div>' +
+        '<div class="statutory-callout-sub">' + escapeHtml(ren.sublabel) + '</div>' +
+        '<div class="statutory-callout-meta">' +
+        'Statutory Base: ' + (ren.isRenewalCycle ? 'Last Renewal Date (' + fmtDate(ren.baseDate) + ')' : (r.priorityDate ? 'Priority Date (' + fmtDate(r.priorityDate) + ')' : (r.filingDate ? 'Application Date (' + fmtDate(r.filingDate) + ')' : (r.registrationDate ? 'Registration Date (' + fmtDate(r.registrationDate) + ')' : 'Reference Date (' + fmtDate(ren.baseDate) + ')')))) +
+        (r.ipType === 'design' ? (ren.isExtended ? ' &bull; 5-Year Extension (Form-3) Active' : ' &bull; Initial 10-Year Term') : '') +
+        '</div>' +
+        '</div>' +
+        '<div class="statutory-callout-actions">';
+
+      if (r.ipType === 'trademark') {
+        html += '<button type="button" class="btn btn-secondary btn-sm" data-action="open-misc-form" data-record-id="' + r.id + '" data-form-prefill="TM-R">+ Log Renewal (TM-R)</button>';
+      } else if (r.ipType === 'design') {
+        if (ren.canExtend || ren.phase === 'upcoming') {
+          html += '<button type="button" class="btn btn-secondary btn-sm" data-action="open-misc-form" data-record-id="' + r.id + '" data-form-prefill="Form-3">+ Log Form-3 Extension</button>';
+        } else if (ren.canRestore || ren.phase === 'restoration') {
+          html += '<button type="button" class="btn btn-secondary btn-sm" data-action="open-misc-form" data-record-id="' + r.id + '" data-form-prefill="Form-4">+ Log Form-4 Restoration</button>';
+        }
+      }
+      html += '</div></div>';
     }
 
-    html += '<div class="timeline-track">';
-    timeline.forEach(function (entry) {
-      var fromSd = statusDef(entry.fromStatus);
-      var toSd = statusDef(entry.toStatus);
-      var markerTier = toSd.tier || 'info';
-      html += '<div class="timeline-item">';
-      html += '<div class="timeline-marker tier-' + markerTier + '"></div>';
-      html += '<div class="timeline-card">';
+    // 2. Toolbar with View Toggle
+    html += '<div class="timeline-toolbar">' +
+      '<div style="display:flex;align-items:center;gap:8px;">' +
+      '<h4 style="margin:0;">Procedural Lifecycle &amp; Statutory Filings</h4>' +
+      '<span class="timeline-badge">' + stageCount + ' stage' + (stageCount === 1 ? '' : 's') + ' &bull; ' + miscCount + ' form' + (miscCount === 1 ? '' : 's') + '</span>' +
+      '</div>' +
+      '<div class="timeline-mode-toggle">' +
+      '<button type="button" class="timeline-mode-btn' + (viewMode === 'dual' ? ' active' : '') + '" data-action="toggle-timeline-view" data-record-id="' + r.id + '" data-mode="dual">Side-by-Side</button>' +
+      '<button type="button" class="timeline-mode-btn' + (viewMode === 'unified' ? ' active' : '') + '" data-action="toggle-timeline-view" data-record-id="' + r.id + '" data-mode="unified">Unified Stream</button>' +
+      '</div></div>';
 
-      html += '<div class="timeline-card-header">';
-      html += '<div class="timeline-transition">';
-      html += '<span class="badge tier-' + fromSd.tier + '"><span class="dot"></span>' + escapeHtml(entry.fromStatusLabel || fromSd.label) + '</span>';
-      html += '<span class="timeline-arrow">➔</span>';
-      html += '<span class="badge tier-' + toSd.tier + '"><span class="dot"></span>' + escapeHtml(entry.toStatusLabel || toSd.label) + '</span>';
-      html += '</div>';
-      html += '<div class="timeline-meta mono" title="Recorded at ' + escapeHtml(entry.timestamp || '') + '">';
-      html += '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
-      html += escapeHtml(fmtDateTime(entry.timestamp));
-      html += '</div>';
-      html += '</div>';
+    // 3. Render either Dual Grid or Unified Stream
+    if (viewMode === 'dual') {
+      html += '<div class="timeline-dual-grid">';
 
-      html += '<div class="timeline-dates">';
-      html += '<span class="timeline-date-chip"><strong>Effective:</strong> ' + (fmtDate(entry.effectiveDate) || escapeHtml(entry.effectiveDate) || '—') + '</span>';
-      if (entry.deadline) {
-        html += '<span class="timeline-date-chip deadline-chip"><strong>Deadline:</strong> ' + (fmtDate(entry.deadline) || escapeHtml(entry.deadline)) + '</span>';
+      // Left Column: Primary Milestones Timeline
+      html += '<div class="timeline-panel"><div class="timeline-block-head" style="margin-bottom:10px;">' +
+        '<div style="font-size:13px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px;">' +
+        '<span>Primary Workflow Milestones</span>' +
+        '<span class="timeline-badge">' + stageCount + '</span>' +
+        '</div></div>';
+
+      if (!stageCount) {
+        html += '<div class="timeline-empty"><span style="font-size:16px;">⏳</span> No stage transitions recorded yet. Changes in matter status appear here.</div>';
+      } else {
+        html += '<div class="timeline-track">';
+        timeline.forEach(function (entry) {
+          var fromSd = statusDef(entry.fromStatus);
+          var toSd = statusDef(entry.toStatus);
+          var markerTier = toSd.tier || 'info';
+          html += '<div class="timeline-item">';
+          html += '<div class="timeline-marker tier-' + markerTier + '"></div>';
+          html += '<div class="timeline-card">';
+          html += '<div class="timeline-card-header">';
+          html += '<div class="timeline-transition">';
+          html += '<span class="badge tier-' + fromSd.tier + '"><span class="dot"></span>' + escapeHtml(entry.fromStatusLabel || fromSd.label) + '</span>';
+          html += '<span class="timeline-arrow">➔</span>';
+          html += '<span class="badge tier-' + toSd.tier + '"><span class="dot"></span>' + escapeHtml(entry.toStatusLabel || toSd.label) + '</span>';
+          html += '</div>';
+          html += '<div class="timeline-meta mono" title="Recorded at ' + escapeHtml(entry.timestamp || '') + '">';
+          html += '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+          html += escapeHtml(fmtDateTime(entry.timestamp));
+          html += '</div></div>';
+
+          html += '<div class="timeline-dates">';
+          html += '<span class="timeline-date-chip"><strong>Effective:</strong> ' + (fmtDate(entry.effectiveDate) || escapeHtml(entry.effectiveDate) || '—') + '</span>';
+          if (entry.deadline) {
+            html += '<span class="timeline-date-chip deadline-chip"><strong>Deadline:</strong> ' + (fmtDate(entry.deadline) || escapeHtml(entry.deadline)) + '</span>';
+          }
+          html += '</div>';
+
+          if (entry.remarks) {
+            html += '<div class="timeline-remarks">' + escapeHtml(entry.remarks) + '</div>';
+          }
+          html += '</div></div>';
+        });
+        html += '</div>';
+      }
+      html += '</div>'; // end left column
+
+      // Right Column: Miscellaneous Filings & Amendments Panel
+      html += '<div class="misc-panel">';
+      html += '<div class="misc-panel-head">' +
+        '<div class="misc-panel-title">' +
+        '<span>Miscellaneous &amp; Statutory Forms</span>' +
+        '<span class="misc-count-badge">' + miscCount + '</span>' +
+        '</div>' +
+        '<button type="button" class="btn btn-secondary btn-sm" data-action="open-misc-form" data-record-id="' + r.id + '">+ Log Statutory Form</button>' +
+        '</div>';
+
+      if (!miscCount) {
+        html += '<div class="misc-empty">' +
+          '<div style="font-size:18px;margin-bottom:6px;">📋</div>' +
+          '<strong>No miscellaneous statutory forms logged.</strong><br>' +
+          'Track Form TM-M, TM-P, Form-30, Form-24, or incidental petitions here without disrupting primary milestone workflows.' +
+          '<div style="margin-top:10px;"><button type="button" class="btn btn-secondary btn-sm" data-action="open-misc-form" data-record-id="' + r.id + '">+ Log First Form</button></div>' +
+          '</div>';
+      } else {
+        html += '<div class="misc-list">';
+        miscFilings.forEach(function (f) {
+          var stObj = MISC_FORM_STATUSES.filter(function (s) { return s.key === f.status; })[0] || MISC_FORM_STATUSES[0];
+          html += '<div class="misc-card">';
+          html += '<div class="misc-card-top">';
+          html += '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">' +
+            '<span class="form-pill">' + escapeHtml(f.formNumber) + '</span>' +
+            '<span class="badge tier-' + stObj.tier + '"><span class="dot"></span>' + escapeHtml(f.status || 'Filed') + '</span>' +
+            (f.cbrNumber ? '<span class="cbr-tag">CBR: ' + escapeHtml(f.cbrNumber) + '</span>' : '') +
+            '</div>';
+          html += '<div class="misc-card-actions">' +
+            '<button type="button" class="btn-ghost" data-action="open-edit-misc-form" data-record-id="' + r.id + '" data-filing-id="' + f.id + '" title="Edit Form"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>' +
+            '<button type="button" class="btn-ghost" data-action="delete-misc-form" data-record-id="' + r.id + '" data-filing-id="' + f.id + '" title="Delete Form"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>' +
+            '</div>';
+          html += '</div>';
+
+          html += '<div class="misc-purpose">' + escapeHtml(f.purpose) + '</div>';
+          if (f.notes) {
+            html += '<div class="misc-notes">' + escapeHtml(f.notes) + '</div>';
+          }
+          html += '<div class="misc-card-footer">' +
+            '<span>Filed: <strong>' + (fmtDate(f.filingDate) || escapeHtml(f.filingDate) || '—') + '</strong></span>' +
+            '<span class="mono" title="Recorded at ' + escapeHtml(f.timestamp || '') + '">' + escapeHtml(fmtDateTime(f.timestamp)) + '</span>' +
+            '</div>';
+          html += '</div>';
+        });
+        html += '</div>';
+      }
+      html += '</div>'; // misc-panel
+
+      html += '</div>'; // timeline-dual-grid
+    } else {
+      // UNIFIED STREAM MODE
+      html += '<div class="unified-timeline-wrap">' +
+        '<div style="display:flex;justify-content:flex-end;margin-bottom:10px;">' +
+        '<button type="button" class="btn btn-secondary btn-sm" data-action="open-misc-form" data-record-id="' + r.id + '">+ Log Statutory Form</button>' +
+        '</div>';
+
+      var unifiedEvents = [];
+      timeline.forEach(function (entry) {
+        unifiedEvents.push({
+          type: 'milestone',
+          date: entry.effectiveDate || entry.timestamp,
+          timestamp: entry.timestamp,
+          raw: entry
+        });
+      });
+      miscFilings.forEach(function (f) {
+        unifiedEvents.push({
+          type: 'misc',
+          date: f.filingDate || f.timestamp,
+          timestamp: f.timestamp,
+          raw: f
+        });
+      });
+
+      unifiedEvents.sort(function (a, b) {
+        var da = a.date || a.timestamp || '';
+        var db = b.date || b.timestamp || '';
+        return da < db ? 1 : da > db ? -1 : 0;
+      });
+
+      if (!unifiedEvents.length) {
+        html += '<div class="timeline-empty"><span style="font-size:16px;">⏳</span> No activity recorded yet. Primary milestone transitions and statutory forms will appear here in unified chronological order.</div>';
+      } else {
+        html += '<div class="timeline-track">';
+        unifiedEvents.forEach(function (ev) {
+          if (ev.type === 'milestone') {
+            var entry = ev.raw;
+            var fromSd = statusDef(entry.fromStatus);
+            var toSd = statusDef(entry.toStatus);
+            var markerTier = toSd.tier || 'info';
+            html += '<div class="timeline-item">';
+            html += '<div class="timeline-marker tier-' + markerTier + '"></div>';
+            html += '<div class="timeline-card">';
+            html += '<div class="timeline-card-header">';
+            html += '<div class="timeline-transition">';
+            html += '<span class="badge tier-' + fromSd.tier + '"><span class="dot"></span>' + escapeHtml(entry.fromStatusLabel || fromSd.label) + '</span>';
+            html += '<span class="timeline-arrow">➔</span>';
+            html += '<span class="badge tier-' + toSd.tier + '"><span class="dot"></span>' + escapeHtml(entry.toStatusLabel || toSd.label) + '</span>';
+            html += '<span class="badge tier-info" style="font-size:10.5px;padding:1px 6px;">Stage Milestone</span>';
+            html += '</div>';
+            html += '<div class="timeline-meta mono">' + escapeHtml(fmtDateTime(entry.timestamp)) + '</div>';
+            html += '</div>';
+            html += '<div class="timeline-dates">';
+            html += '<span class="timeline-date-chip"><strong>Effective:</strong> ' + (fmtDate(entry.effectiveDate) || escapeHtml(entry.effectiveDate) || '—') + '</span>';
+            if (entry.deadline) html += '<span class="timeline-date-chip deadline-chip"><strong>Deadline:</strong> ' + (fmtDate(entry.deadline) || escapeHtml(entry.deadline)) + '</span>';
+            html += '</div>';
+            if (entry.remarks) html += '<div class="timeline-remarks">' + escapeHtml(entry.remarks) + '</div>';
+            html += '</div></div>';
+          } else {
+            var f = ev.raw;
+            var stObj = MISC_FORM_STATUSES.filter(function (s) { return s.key === f.status; })[0] || MISC_FORM_STATUSES[0];
+            html += '<div class="timeline-item is-misc">';
+            html += '<div class="timeline-marker"></div>';
+            html += '<div class="timeline-card">';
+            html += '<div class="timeline-card-header">';
+            html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
+              '<span class="form-pill">' + escapeHtml(f.formNumber) + '</span>' +
+              '<span class="badge tier-' + stObj.tier + '"><span class="dot"></span>' + escapeHtml(f.status || 'Filed') + '</span>' +
+              (f.cbrNumber ? '<span class="cbr-tag">CBR: ' + escapeHtml(f.cbrNumber) + '</span>' : '') +
+              '</div>';
+            html += '<div style="display:flex;align-items:center;gap:8px;">' +
+              '<span class="timeline-meta mono">' + escapeHtml(fmtDateTime(f.timestamp)) + '</span>' +
+              '<div class="misc-card-actions">' +
+              '<button type="button" class="btn-ghost" data-action="open-edit-misc-form" data-record-id="' + r.id + '" data-filing-id="' + f.id + '" title="Edit Form"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>' +
+              '<button type="button" class="btn-ghost" data-action="delete-misc-form" data-record-id="' + r.id + '" data-filing-id="' + f.id + '" title="Delete Form"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>' +
+              '</div></div>';
+            html += '</div>';
+            html += '<div class="timeline-dates">';
+            html += '<span class="timeline-date-chip"><strong>Filing Date:</strong> ' + (fmtDate(f.filingDate) || escapeHtml(f.filingDate) || '—') + '</span>';
+            html += '</div>';
+            html += '<div class="misc-purpose" style="margin-bottom:6px;">' + escapeHtml(f.purpose) + '</div>';
+            if (f.notes) html += '<div class="timeline-remarks">' + escapeHtml(f.notes) + '</div>';
+            html += '</div></div>';
+          }
+        });
+        html += '</div>';
       }
       html += '</div>';
+    }
 
-      if (entry.remarks) {
-        html += '<div class="timeline-remarks">' + escapeHtml(entry.remarks) + '</div>';
-      }
-
-      html += '</div>';
-      html += '</div>';
-    });
-    html += '</div>';
     html += '</div>';
     return html;
   }
@@ -1952,13 +2558,14 @@
     return html;
   }
 
-  /* ===================== Modal: add/edit/import ===================== */
+  /* ===================== Modal: add/edit/import/misc ===================== */
   function blankDraft() {
     var cfg = ipConfig(view.ipType);
     return { id: null, clientId: view.clientId === '__all__' ? ((state.clients[0] && state.clients[0].id) || null) : view.clientId,
       ipType: view.ipType, code: '', brand: '', cls: cfg.clsMode === 'select' ? (cfg.clsOptions[0] || '') : '', appno: '',
       markType: cfg.markTypeMode === 'select' ? MARK_TYPES[0] : '', status: statusDefsForType(view.ipType)[0].key, desc: '', action: '',
-      actionDate: '', renewDate: '', newClientName: '', applicants: [], authors: [], contributors: [], logoUrl: '', timeline: [] };
+      actionDate: '', renewDate: '', filingDate: '', priorityDate: '', registrationDate: '', lastRenewalDate: '', designExtended: false,
+      newClientName: '', applicants: [], authors: [], contributors: [], logoUrl: '', timeline: [], miscFilings: [] };
   }
 
   function openAddModal() {
@@ -1985,6 +2592,12 @@
     if (!modalState.draft.contributors) modalState.draft.contributors = [];
     if (!modalState.draft.logoUrl) modalState.draft.logoUrl = '';
     if (!modalState.draft.timeline) modalState.draft.timeline = [];
+    if (!modalState.draft.miscFilings) modalState.draft.miscFilings = [];
+    if (modalState.draft.designExtended === undefined) modalState.draft.designExtended = false;
+    if (!modalState.draft.filingDate) modalState.draft.filingDate = '';
+    if (!modalState.draft.priorityDate) modalState.draft.priorityDate = '';
+    if (!modalState.draft.registrationDate) modalState.draft.registrationDate = '';
+    if (!modalState.draft.lastRenewalDate) modalState.draft.lastRenewalDate = '';
     renderModal();
   }
   function openStageTransitionModal(record, newStatus) {
@@ -1996,6 +2609,36 @@
       effectiveDate: todayIso(),
       deadline: calculateSuggestedDeadline(record.ipType, newStatus),
       remarks: '',
+      errors: {}
+    };
+    renderModal();
+  }
+  function openMiscFormModal(recordId, filingIdToEdit, prefillFormCode) {
+    var r = recordById(recordId);
+    if (!r) return;
+    var filing = null;
+    if (filingIdToEdit && r.miscFilings) {
+      for (var i = 0; i < r.miscFilings.length; i++) {
+        if (r.miscFilings[i].id === filingIdToEdit) {
+          filing = r.miscFilings[i];
+          break;
+        }
+      }
+    }
+    var defaultForm = prefillFormCode || (r.ipType === 'design' ? 'Form-3' : 'TM-M');
+    modalState = {
+      mode: 'misc-form',
+      recordId: recordId,
+      filingId: filing ? filing.id : null,
+      draft: filing ? JSON.parse(JSON.stringify(filing)) : {
+        formNumber: defaultForm,
+        filingDate: todayIso(),
+        purpose: prefillFormCode === 'TM-R' ? 'Statutory Renewal of Trade Mark' : (prefillFormCode === 'Form-3' ? 'Application for extension of copyright in registered design (5 years)' : ''),
+        cbrNumber: '',
+        status: 'Filed',
+        notes: ''
+      },
+      autoUpdateRenewal: true,
       errors: {}
     };
     renderModal();
@@ -2023,9 +2666,177 @@
       root.innerHTML = renderExportModal();
     } else if (modalState.mode === 'stage-transition') {
       root.innerHTML = renderStageTransitionModal();
+    } else if (modalState.mode === 'misc-form') {
+      root.innerHTML = renderMiscFormModal();
     } else {
       root.innerHTML = renderFormModal();
     }
+  }
+
+  function renderMiscFormModal() {
+    var r = recordById(modalState.recordId);
+    if (!r) return '';
+    var d = modalState.draft;
+    var isEdit = !!modalState.filingId;
+    var formsList = STATUTORY_FORMS[r.ipType] || STATUTORY_FORMS.trademark;
+    var isTmR = (d.formNumber || '').toUpperCase().indexOf('TM-R') !== -1;
+    var isForm3 = (d.formNumber || '').toUpperCase().indexOf('FORM-3') !== -1;
+
+    var html = '<div class="overlay" data-action="overlay-close"><div class="modal" role="dialog" aria-modal="true" style="max-width:580px;">';
+    html += '<div class="modal-head"><div><h2 style="margin:0 0 4px;">' + (isEdit ? 'Edit Statutory Form' : 'Log Miscellaneous Form') + '</h2>' +
+      '<p class="sub" style="margin:0;">' + escapeHtml(r.brand) + ' (' + escapeHtml(r.appno || 'No App No') + ') &bull; ' + escapeHtml(ipConfig(r.ipType).label) + '</p></div>' +
+      '<button class="modal-close" data-action="close-modal" aria-label="Close">✕</button></div>';
+
+    html += '<div class="modal-body">';
+
+    // Quick Select Buttons
+    html += '<div class="field"><label>Select Common Statutory Form</label>';
+    html += '<div class="quick-forms-grid">';
+    formsList.forEach(function (f) {
+      var active = (d.formNumber || '').toLowerCase() === f.code.toLowerCase();
+      html += '<button type="button" class="quick-form-btn' + (active ? ' active' : '') + '" data-action="select-quick-form" data-code="' + escapeHtml(f.code) + '" title="' + escapeHtml(f.desc) + '">' + escapeHtml(f.code) + '</button>';
+    });
+    html += '</div></div>';
+
+    html += '<div class="field-grid">';
+    html += '<div class="field' + (modalState.errors.formNumber ? ' has-error' : '') + '"><label>Form Number / Name <span style="color:var(--critical);">*</span></label>' +
+      '<input type="text" data-misc-field="formNumber" value="' + escapeHtml(d.formNumber || '') + '" placeholder="e.g. TM-M, TM-P, Form-30">' +
+      (modalState.errors.formNumber ? '<div class="error-msg">' + modalState.errors.formNumber + '</div>' : '') + '</div>';
+
+    html += '<div class="field' + (modalState.errors.filingDate ? ' has-error' : '') + '"><label>Filing Date <span style="color:var(--critical);">*</span></label>' +
+      '<input type="date" data-misc-field="filingDate" value="' + escapeHtml(d.filingDate || todayIso()) + '">' +
+      (modalState.errors.filingDate ? '<div class="error-msg">' + modalState.errors.filingDate + '</div>' : '') + '</div>';
+    html += '</div>';
+
+    html += '<div class="field-grid">';
+    html += '<div class="field"><label>CBR / Acknowledgment No. <span class="hint">(Optional)</span></label>' +
+      '<input type="text" data-misc-field="cbrNumber" value="' + escapeHtml(d.cbrNumber || '') + '" placeholder="e.g. CBR-982415"></div>';
+
+    html += '<div class="field"><label>Status</label><select data-misc-field="status">';
+    MISC_FORM_STATUSES.forEach(function (st) {
+      html += '<option value="' + st.key + '"' + (st.key === d.status ? ' selected' : '') + '>' + st.label + '</option>';
+    });
+    html += '</select></div>';
+    html += '</div>';
+
+    html += '<div class="field' + (modalState.errors.purpose ? ' has-error' : '') + '"><label>Filing Purpose / Subject <span style="color:var(--critical);">*</span></label>' +
+      '<input type="text" data-misc-field="purpose" value="' + escapeHtml(d.purpose || '') + '" placeholder="e.g. Request for change of address / Power of Attorney / Amendment">' +
+      (modalState.errors.purpose ? '<div class="error-msg">' + modalState.errors.purpose + '</div>' : '') + '</div>';
+
+    html += '<div class="field"><label>Notes / Attachments Reference <span class="hint">(Optional)</span></label>' +
+      '<textarea data-misc-field="notes" rows="3" placeholder="Reference fee receipt, diary numbers, or specific amendments made...">' + escapeHtml(d.notes || '') + '</textarea></div>';
+
+    // Automated Linkage prompt/checkbox
+    if (isTmR) {
+      html += '<div class="form-linkage-box">' +
+        '<label class="form-linkage-label"><input type="checkbox" data-misc-field="autoUpdateRenewal"' + (modalState.autoUpdateRenewal ? ' checked' : '') + '>' +
+        '<span>Automatically update this Trademark\'s <strong>Last Renewal Date</strong> to <strong>' + (fmtDate(d.filingDate) || escapeHtml(d.filingDate) || 'this filing date') + '</strong> and recalculate next 10-year cycle</span></label>' +
+        '</div>';
+    } else if (isForm3) {
+      html += '<div class="form-linkage-box">' +
+        '<label class="form-linkage-label"><input type="checkbox" data-misc-field="autoUpdateRenewal"' + (modalState.autoUpdateRenewal ? ' checked' : '') + '>' +
+        '<span>Automatically mark this Design\'s <strong>5-Year Extension (Form-3)</strong> as active (statutory term extended to 15 years maximum)</span></label>' +
+        '</div>';
+    }
+
+    html += '</div>';
+
+    html += '<div class="modal-foot">' +
+      '<button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button>' +
+      '<button type="button" class="btn btn-primary" data-action="save-misc-form">' + (isEdit ? 'Save Changes' : 'Log Form') + '</button>' +
+      '</div>';
+
+    html += '</div></div>';
+    return html;
+  }
+
+  function saveMiscForm() {
+    if (!modalState || modalState.mode !== 'misc-form') return;
+    var d = modalState.draft;
+    var errors = {};
+    if (!d.formNumber || !d.formNumber.trim()) errors.formNumber = 'Enter a form number or name.';
+    if (!d.filingDate || !d.filingDate.trim()) errors.filingDate = 'Select a filing date.';
+    if (!d.purpose || !d.purpose.trim()) errors.purpose = 'Enter the purpose or subject of this filing.';
+    modalState.errors = errors;
+    if (Object.keys(errors).length) {
+      renderModal();
+      return;
+    }
+
+    var newState = JSON.parse(JSON.stringify(state));
+    var r = null;
+    for (var i = 0; i < newState.records.length; i++) {
+      if (newState.records[i].id === modalState.recordId) {
+        r = newState.records[i];
+        break;
+      }
+    }
+    if (!r) return;
+
+    if (!r.miscFilings || !Array.isArray(r.miscFilings)) {
+      r.miscFilings = [];
+    }
+
+    var filingEntry = {
+      id: modalState.filingId || ('mf-' + Date.now() + '-' + Math.floor(Math.random() * 10000)),
+      formNumber: d.formNumber.trim(),
+      filingDate: d.filingDate.trim(),
+      cbrNumber: (d.cbrNumber || '').trim(),
+      status: d.status || 'Filed',
+      purpose: d.purpose.trim(),
+      notes: (d.notes || '').trim(),
+      timestamp: d.timestamp || new Date().toISOString()
+    };
+
+    if (modalState.filingId) {
+      var foundIdx = -1;
+      for (var j = 0; j < r.miscFilings.length; j++) {
+        if (r.miscFilings[j].id === modalState.filingId) {
+          foundIdx = j;
+          break;
+        }
+      }
+      if (foundIdx >= 0) r.miscFilings[foundIdx] = filingEntry;
+      else r.miscFilings.unshift(filingEntry);
+    } else {
+      r.miscFilings.unshift(filingEntry);
+    }
+
+    // Auto-update statutory renewal linkages if checked
+    var isTmR = (d.formNumber || '').toUpperCase().indexOf('TM-R') !== -1;
+    var isForm3 = (d.formNumber || '').toUpperCase().indexOf('FORM-3') !== -1;
+    if (modalState.autoUpdateRenewal) {
+      if (isTmR && (r.ipType === 'trademark' || !r.ipType)) {
+        r.lastRenewalDate = d.filingDate.trim();
+        var renCalc = calculateRenewalDetails(r);
+        if (renCalc && renCalc.nextRenewalDate) r.renewDate = renCalc.nextRenewalDate;
+      } else if (isForm3 && r.ipType === 'design') {
+        r.designExtended = true;
+        var renCalcD = calculateRenewalDetails(r);
+        if (renCalcD && renCalcD.nextRenewalDate) r.renewDate = renCalcD.nextRenewalDate;
+      }
+    }
+
+    var cl = clientById(r.clientId);
+    var clientName = cl ? cl.name : '';
+    pushLog(newState, 'Logged Form ' + filingEntry.formNumber + (filingEntry.cbrNumber ? ' (CBR: ' + filingEntry.cbrNumber + ')' : '') + ' for ' + r.brand + ' — ' + clientName);
+    closeModal();
+    persist(newState, 'Logged ' + filingEntry.formNumber + ' successfully.');
+  }
+
+  function deleteMiscForm(recordId, filingId) {
+    if (!confirm('Are you sure you want to remove this statutory form entry?')) return;
+    var newState = JSON.parse(JSON.stringify(state));
+    var r = null;
+    for (var i = 0; i < newState.records.length; i++) {
+      if (newState.records[i].id === recordId) {
+        r = newState.records[i];
+        break;
+      }
+    }
+    if (!r || !r.miscFilings) return;
+    r.miscFilings = r.miscFilings.filter(function (f) { return f.id !== filingId; });
+    persist(newState, 'Removed statutory form entry.');
   }
 
   function fieldClass(name) {
@@ -2255,7 +3066,53 @@
 
     html += '<div class="' + fieldClass('actionDate') + '"><label>Next deadline <span class="hint">(reply / form to file)</span></label><input type="date" data-field="actionDate" value="' + escapeHtml(d.actionDate || '') + '"></div>';
     if (cfg.hasRenewal) {
-      html += '<div class="' + fieldClass('renewDate') + '"><label>Renewal date</label><input type="date" data-field="renewDate" value="' + escapeHtml(d.renewDate || '') + '"></div>';
+      html += '<div class="field span-2 statutory-dates-card">';
+      html += '<div class="statutory-card-title">Statutory Dates &amp; Renewal Engine (' + (d.ipType === 'design' ? 'Designs Act, 2000' : 'Trade Marks Act, 1999') + ')</div>';
+      html += '<div class="field-grid">';
+      html += '<div class="' + fieldClass('filingDate') + '"><label>Application / Filing Date <span class="hint">(Statutory Base Date)</span></label><input type="date" data-field="filingDate" value="' + escapeHtml(d.filingDate || '') + '"></div>';
+      html += '<div class="' + fieldClass('priorityDate') + '"><label>Priority Date <span class="hint">(if convention claimed)</span></label><input type="date" data-field="priorityDate" value="' + escapeHtml(d.priorityDate || '') + '"></div>';
+      html += '<div class="' + fieldClass('registrationDate') + '"><label>Registration / Grant Date</label><input type="date" data-field="registrationDate" value="' + escapeHtml(d.registrationDate || '') + '"></div>';
+      if (d.ipType === 'trademark') {
+        html += '<div class="' + fieldClass('lastRenewalDate') + '"><label>Last Renewal Date <span class="hint">(if previously renewed)</span></label><input type="date" data-field="lastRenewalDate" value="' + escapeHtml(d.lastRenewalDate || '') + '"></div>';
+      } else if (d.ipType === 'design') {
+        html += '<div class="field" style="display:flex;align-items:center;padding-top:20px;"><label class="checkbox-label" style="display:flex;align-items:center;gap:8px;font-weight:600;cursor:pointer;"><input type="checkbox" data-field="designExtended"' + (d.designExtended ? ' checked' : '') + '> 5-Year Extension Granted (Form-3, 15y Max)</label></div>';
+      }
+      html += '</div>';
+
+      var renPreview = calculateRenewalDetails(d);
+      if (renPreview && renPreview.nextRenewalDate) {
+        html += '<div class="renewal-engine-preview renewal-badge phase-' + renPreview.phase + '">';
+        html += '<strong>Engine Calculation:</strong> Next Statutory Deadline: <strong>' + fmtDate(renPreview.nextRenewalDate) + '</strong> &bull; ' + escapeHtml(renPreview.label) + ' &bull; ' + escapeHtml(renPreview.sublabel);
+        html += '</div>';
+      } else {
+        html += '<div class="renewal-engine-hint">Enter application/filing date or registration date to activate automated statutory deadline calculation.</div>';
+      }
+      html += '<div class="' + fieldClass('renewDate') + '" style="margin-top:10px;"><label>Next Renewal Deadline <span class="hint">(auto-calculated or manual override)</span></label><input type="date" data-field="renewDate" value="' + escapeHtml(d.renewDate || (renPreview ? renPreview.nextRenewalDate : '') || '') + '"></div>';
+      html += '</div>';
+
+      if (isEdit && d.id) {
+        html += '<div class="field span-2" style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:14px;">';
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">';
+        html += '<div style="font-size:12.5px;font-weight:700;color:var(--ink);">Miscellaneous Statutory Forms (' + ((d.miscFilings && d.miscFilings.length) || 0) + ')</div>';
+        html += '<button type="button" class="btn btn-secondary btn-sm" data-action="open-misc-form" data-record-id="' + escapeHtml(d.id) + '">+ Log Statutory Form</button>';
+        html += '</div>';
+        if (d.miscFilings && d.miscFilings.length) {
+          html += '<div style="display:flex;flex-direction:column;gap:6px;">';
+          d.miscFilings.forEach(function (f) {
+            html += '<div style="font-size:12px;color:var(--ink-secondary);display:flex;align-items:center;gap:8px;background:var(--surface);padding:6px 10px;border-radius:6px;border:1px solid var(--border);">' +
+              '<span class="form-pill" style="font-size:11px;">' + escapeHtml(f.formNumber) + '</span>' +
+              (f.cbrNumber ? '<span class="cbr-tag" style="font-size:10.5px;">CBR: ' + escapeHtml(f.cbrNumber) + '</span>' : '') +
+              '<span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(f.purpose || '') + '</span>' +
+              '<span style="font-size:11px;color:var(--ink-muted);">' + (fmtDate(f.filingDate) || escapeHtml(f.filingDate)) + '</span>' +
+              '<button type="button" class="btn-ghost" data-action="open-edit-misc-form" data-record-id="' + escapeHtml(d.id) + '" data-filing-id="' + escapeHtml(f.id) + '" title="Edit" style="padding:2px 4px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>' +
+              '</div>';
+          });
+          html += '</div>';
+        } else {
+          html += '<p style="margin:0;font-size:12px;color:var(--ink-muted);">No miscellaneous forms logged for this matter yet (e.g. TM-M, TM-P, Form-30, etc.). Click "+ Log Statutory Form" to add one.</p>';
+        }
+        html += '</div>';
+      }
     }
 
     if (cfg.hasLogo) {
@@ -2598,12 +3455,25 @@
       action: d.action || '',
       actionDate: d.actionDate || null,
       renewDate: d.renewDate || null,
+      filingDate: (d.filingDate || '').trim() || null,
+      priorityDate: (d.priorityDate || '').trim() || null,
+      registrationDate: (d.registrationDate || '').trim() || null,
+      lastRenewalDate: (d.lastRenewalDate || '').trim() || null,
+      designExtended: !!d.designExtended,
+      miscFilings: (d.miscFilings && Array.isArray(d.miscFilings)) ? d.miscFilings : (existingRecord && existingRecord.miscFilings ? existingRecord.miscFilings : []),
       applicants: cleanApplicants(d.applicants),
       authors: cleanAuthors(d.authors),
       contributors: cleanContributors(d.contributors),
       logoUrl: (d.logoUrl || '').trim(),
       timeline: (d.timeline && Array.isArray(d.timeline)) ? d.timeline : (existingRecord && existingRecord.timeline ? existingRecord.timeline : [])
     };
+
+    var renCalc = calculateRenewalDetails(record);
+    if (renCalc && renCalc.nextRenewalDate) {
+      if (!d.renewDate || (existingRecord && d.renewDate === existingRecord.renewDate)) {
+        record.renewDate = renCalc.nextRenewalDate;
+      }
+    }
 
     if (isEdit && existingRecord && isForwardTransition(record.ipType, existingRecord.status, record.status)) {
       var oldSd = statusDef(existingRecord.status);
@@ -3126,7 +3996,12 @@
     var desc = getField(row, 'description');
     var action = getField(row, 'nextstep');
     var actionDateRaw = getField(row, 'nextdeadline');
-    var renewDateRaw = getField(row, 'renewaldate');
+    var renewDateRaw = getField(row, 'renewaldate') || getField(row, 'renewdate');
+    var filingDateRaw = getField(row, 'filingdate') || getField(row, 'applicationdate');
+    var priorityDateRaw = getField(row, 'prioritydate');
+    var registrationDateRaw = getField(row, 'registrationdate') || getField(row, 'grantdate');
+    var lastRenewalDateRaw = getField(row, 'lastrenewaldate');
+    var designExtendedRaw = getField(row, 'designextended') || getField(row, 'extended');
 
     if (!brand) errors.push('missing ' + cfg.brandLabel);
     if (!appno) errors.push('missing ' + cfg.appnoLabel);
@@ -3150,11 +4025,28 @@
     if (statusRaw && !matchStatusKey(statusRaw, ipType)) warnings.push('unrecognized Status "' + statusRaw + '" — set to ' + statusDef(defaultStatusKey).label);
     if (!statusRaw) warnings.push('no Status given — set to ' + statusDef(defaultStatusKey).label);
 
+    var filingDate = filingDateRaw ? parseImportDate(filingDateRaw) : null;
+    var priorityDate = priorityDateRaw ? parseImportDate(priorityDateRaw) : null;
+    var registrationDate = registrationDateRaw ? parseImportDate(registrationDateRaw) : null;
+    var lastRenewalDate = lastRenewalDateRaw ? parseImportDate(lastRenewalDateRaw) : null;
+    var designExtended = /^(yes|true|1|y)$/i.test(String(designExtendedRaw || '').trim());
+
     var actionDate = actionDateRaw ? parseImportDate(actionDateRaw) : null;
     if (actionDateRaw && !actionDate) warnings.push('could not read deadline date "' + actionDateRaw + '"');
     var renewDate = null;
     if (cfg.hasRenewal) {
       renewDate = renewDateRaw ? parseImportDate(renewDateRaw) : null;
+      if (!renewDate) {
+        var renCalc = calculateRenewalDetails({
+          ipType: ipType,
+          filingDate: filingDate,
+          priorityDate: priorityDate,
+          registrationDate: registrationDate,
+          lastRenewalDate: lastRenewalDate,
+          designExtended: designExtended
+        });
+        if (renCalc && renCalc.nextRenewalDate) renewDate = renCalc.nextRenewalDate;
+      }
       if (renewDateRaw && !renewDate) warnings.push('could not read renewal date "' + renewDateRaw + '"');
     }
 
@@ -3206,7 +4098,10 @@
     var draft = {
       code: code, clientName: clientName, brand: brand, markType: markType, cls: cls2, appno: appno,
       status: statusKey, desc: desc, action: action || statusDef(statusKey).suggestedAction,
-      actionDate: actionDate, renewDate: renewDate, applicants: applicants, authors: authors, contributors: contributors
+      actionDate: actionDate, renewDate: renewDate,
+      filingDate: filingDate, priorityDate: priorityDate, registrationDate: registrationDate,
+      lastRenewalDate: lastRenewalDate, designExtended: designExtended,
+      applicants: applicants, authors: authors, contributors: contributors
     };
     return { rowNum: rowNum, draft: draft, errors: errors, warnings: warnings, ok: errors.length === 0 };
   }
@@ -3259,7 +4154,11 @@
       var record = {
         id: nextRecordId(newState), clientId: clientId, ipType: ipType, code: d.code, brand: d.brand,
         cls: d.cls, appno: d.appno, markType: d.markType, status: d.status, desc: d.desc, action: d.action,
-        actionDate: d.actionDate, renewDate: d.renewDate, applicants: d.applicants, authors: d.authors || [], contributors: d.contributors || [], logoUrl: '', timeline: []
+        actionDate: d.actionDate, renewDate: d.renewDate,
+        filingDate: d.filingDate || null, priorityDate: d.priorityDate || null,
+        registrationDate: d.registrationDate || null, lastRenewalDate: d.lastRenewalDate || null,
+        designExtended: !!d.designExtended, miscFilings: [],
+        applicants: d.applicants, authors: d.authors || [], contributors: d.contributors || [], logoUrl: '', timeline: []
       };
       newState.records.push(record);
       newState.nextRecordSeq = (newState.nextRecordSeq || newState.records.length + 1) + 1;
@@ -3356,7 +4255,26 @@
       { key: 'deadlineDays', label: 'Days Until Deadline', get: function (r) { return r.actionDate ? daysUntil(r.actionDate) : ''; } }
     );
     if (cfg.hasRenewal) {
-      cols.push({ key: 'renewDate', label: 'Renewal Date', get: function (r) { return r.renewDate || ''; } });
+      cols.push(
+        { key: 'filingDate', label: 'Filing / Application Date', get: function (r) { return r.filingDate || ''; } },
+        { key: 'priorityDate', label: 'Priority Date', get: function (r) { return r.priorityDate || ''; } },
+        { key: 'registrationDate', label: 'Registration Date', get: function (r) { return r.registrationDate || ''; } }
+      );
+      if (ipType === 'trademark') {
+        cols.push({ key: 'lastRenewalDate', label: 'Last Renewal Date', get: function (r) { return r.lastRenewalDate || ''; } });
+      } else if (ipType === 'design') {
+        cols.push({ key: 'designExtended', label: '5-Year Extension (Form-3)', get: function (r) { return r.designExtended ? 'Yes' : 'No'; } });
+      }
+      cols.push(
+        { key: 'renewDate', label: 'Next Renewal Deadline', get: function (r) {
+          var ren = calculateRenewalDetails(r);
+          return (ren && ren.nextRenewalDate) || r.renewDate || '';
+        } },
+        { key: 'renewalPhase', label: 'Renewal Phase / Status', get: function (r) {
+          var ren = calculateRenewalDetails(r);
+          return ren ? ren.label : '';
+        } }
+      );
     }
     if (cfg.hasLogo) {
       cols.push({ key: 'logoUrl', label: 'Logo / Asset URL', get: function (r) { return r.logoUrl || ''; } });
@@ -3420,6 +4338,17 @@
             (t.deadline ? ' | Deadline: ' + t.deadline : '') +
             (t.remarks ? ' | Remarks: ' + t.remarks : '') +
             (t.timestamp ? ' | Logged: ' + t.timestamp : '');
+        }).join(' ;; ');
+      } },
+      { key: 'miscFilingsCount', label: 'Miscellaneous Filings Count', get: function (r) { return (r.miscFilings || []).length; } },
+      { key: 'miscFilingsSummary', label: 'Miscellaneous Filings Summary', get: function (r) {
+        var list = r.miscFilings || [];
+        if (!list.length) return 'No miscellaneous forms';
+        return list.map(function (f, idx) {
+          return '[' + (idx + 1) + '] ' + f.formNumber + (f.cbrNumber ? ' (CBR: ' + f.cbrNumber + ')' : '') +
+            ' | Date: ' + (f.filingDate || '—') +
+            ' | Status: ' + (f.status || 'Filed') +
+            ' | Purpose: ' + (f.purpose || '—');
         }).join(' ;; ');
       } }
     );
@@ -3811,6 +4740,45 @@
           var sec = document.getElementById('needs-deadline-section');
           if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
           break;
+        case 'open-misc-form':
+          e.stopPropagation();
+          openMiscFormModal(el.getAttribute('data-record-id'), null, el.getAttribute('data-form-prefill'));
+          break;
+        case 'open-edit-misc-form':
+          e.stopPropagation();
+          openMiscFormModal(el.getAttribute('data-record-id'), el.getAttribute('data-filing-id'));
+          break;
+        case 'delete-misc-form':
+          e.stopPropagation();
+          deleteMiscForm(el.getAttribute('data-record-id'), el.getAttribute('data-filing-id'));
+          break;
+        case 'save-misc-form':
+          saveMiscForm();
+          break;
+        case 'select-quick-form':
+          if (modalState && modalState.draft) {
+            var qCode = el.getAttribute('data-code');
+            modalState.draft.formNumber = qCode;
+            if (qCode === 'TM-R') {
+              modalState.draft.purpose = 'Statutory Renewal of Trade Mark';
+              modalState.autoUpdateRenewal = true;
+            } else if (qCode === 'Form-3') {
+              modalState.draft.purpose = 'Application for extension of copyright in registered design (5 years)';
+              modalState.autoUpdateRenewal = true;
+            }
+            renderModal();
+          }
+          break;
+        case 'toggle-timeline-view':
+          e.stopPropagation();
+          var tRecId = el.getAttribute('data-record-id') || el.getAttribute('data-id');
+          var tMode = el.getAttribute('data-mode') || el.getAttribute('data-view') || 'dual';
+          if (tRecId) {
+            view.timelineViews = view.timelineViews || {};
+            view.timelineViews[tRecId] = tMode;
+            renderAll();
+          }
+          break;
       }
     });
 
@@ -3886,16 +4854,46 @@
         renderAll();
         return;
       }
+      if (el.matches('[data-misc-field]')) {
+        var mField = el.getAttribute('data-misc-field');
+        if (modalState && modalState.mode === 'misc-form') {
+          if (mField === 'autoUpdateRenewal') {
+            modalState.autoUpdateRenewal = el.checked;
+          } else {
+            modalState.draft[mField] = (el.type === 'checkbox') ? el.checked : el.value;
+            if (mField === 'formNumber') {
+              var isTmR = (el.value || '').toUpperCase().indexOf('TM-R') !== -1;
+              var isForm3 = (el.value || '').toUpperCase().indexOf('FORM-3') !== -1;
+              if (isTmR) {
+                if (!modalState.draft.purpose) modalState.draft.purpose = 'Statutory Renewal of Trade Mark';
+                modalState.autoUpdateRenewal = true;
+              } else if (isForm3) {
+                if (!modalState.draft.purpose) modalState.draft.purpose = 'Application for extension of copyright in registered design (5 years)';
+                modalState.autoUpdateRenewal = true;
+              }
+              renderModal();
+            }
+          }
+        }
+        return;
+      }
       if (el.matches('[data-field]')) {
         var fld = el.getAttribute('data-field');
         if (fld === 'stageEffectiveDate' || fld === 'stageDeadline' || fld === 'stageRemarks') {
           if (modalState) modalState[fld] = el.value;
           return;
         }
-        updateDraftField(fld, el.value);
-        if (fld === 'clientId' || fld === 'status') {
+        var val = (el.type === 'checkbox') ? el.checked : el.value;
+        updateDraftField(fld, val);
+        if (fld === 'clientId' || fld === 'status' || fld === 'filingDate' || fld === 'priorityDate' || fld === 'registrationDate' || fld === 'lastRenewalDate' || fld === 'designExtended') {
           if (fld === 'status' && modalState && modalState.mode === 'edit' && modalState.initialStatus) {
             modalState.stageDeadline = calculateSuggestedDeadline(modalState.draft.ipType, el.value);
+          }
+          if (fld === 'filingDate' || fld === 'priorityDate' || fld === 'registrationDate' || fld === 'lastRenewalDate' || fld === 'designExtended') {
+            var renPrev = calculateRenewalDetails(modalState.draft);
+            if (renPrev && renPrev.nextRenewalDate) {
+              modalState.draft.renewDate = renPrev.nextRenewalDate;
+            }
           }
           renderModal();
         }
@@ -3986,6 +4984,20 @@
         var cIdx2 = parseInt(el.getAttribute('data-contributor-idx'), 10);
         var cField2 = el.getAttribute('data-contributor-field');
         modalState.draft.contributors[cIdx2][cField2] = el.value;
+        return;
+      }
+      if (el.matches('[data-misc-field]')) {
+        var mField2 = el.getAttribute('data-misc-field');
+        if (modalState && modalState.mode === 'misc-form' && mField2 !== 'autoUpdateRenewal') {
+          modalState.draft[mField2] = el.value;
+          if (modalState.errors && modalState.errors[mField2]) {
+            delete modalState.errors[mField2];
+            var errEl2 = el.parentNode.querySelector('.error-msg');
+            if (errEl2) errEl2.remove();
+            var parentField2 = el.closest('.field');
+            if (parentField2) parentField2.classList.remove('has-error');
+          }
+        }
         return;
       }
       if (el.matches('[data-field]') && el.tagName !== 'SELECT') {
