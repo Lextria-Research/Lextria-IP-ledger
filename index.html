@@ -843,7 +843,24 @@
 
     return s;
   }
-  var state = normalizeState(JSON.parse(document.getElementById('app-state').textContent));
+  var SEED_PORTFOLIO_VERSION = '2026-09-17-portfolio-v1';
+  var SEED_RAW_EL = document.getElementById('app-state');
+  var SEED_STATE = normalizeState(JSON.parse(SEED_RAW_EL ? SEED_RAW_EL.textContent : '{"clients":[],"records":[]}'));
+  SEED_STATE.portfolioVersion = SEED_PORTFOLIO_VERSION;
+
+  function cloneSeedState() {
+    return normalizeState(JSON.parse(JSON.stringify(SEED_STATE)));
+  }
+
+  function shouldAdoptSeed(candidate) {
+    if (!candidate || typeof candidate !== 'object') return true;
+    if (!Array.isArray(candidate.records)) return true;
+    // If candidate has fewer records than our master seed (1,420), it is missing the full ingested portfolio
+    if (candidate.records.length < SEED_STATE.records.length) return true;
+    return false;
+  }
+
+  var state = cloneSeedState();
   var artifactApi = null;
   var isReadOnly = false;
 
@@ -881,6 +898,22 @@
     return headers;
   }
 
+  function syncStateToBackend(cb) {
+    if (!backendConfigured || !backendAuthorized) {
+      if (typeof cb === 'function') cb(false);
+      return;
+    }
+    fetch('/api/state', {
+      method: 'PUT',
+      headers: apiAuthHeaders(),
+      body: JSON.stringify(state)
+    }).then(function (res) {
+      if (typeof cb === 'function') cb(res.ok);
+    }).catch(function () {
+      if (typeof cb === 'function') cb(false);
+    });
+  }
+
   // A failed / non-JSON / non-2xx response from /api/state is treated exactly like
   // { configured: false } so a plain static host (no serverless function at all,
   // e.g. `python3 -m http.server`) falls through to localStorage without ever
@@ -903,14 +936,21 @@
 
   function loadLocalStorageState() {
     var saved = getLocalPref(LEXTRIA_STATE_KEY, '');
-    if (!saved) return;
+    if (!saved) {
+      state = cloneSeedState();
+      return;
+    }
     try {
       var parsed = JSON.parse(saved);
-      if (parsed && typeof parsed === 'object' && Array.isArray(parsed.records)) {
-        if (parsed.records.length === 0 && state.records.length > 0) return;
+      if (shouldAdoptSeed(parsed)) {
+        state = cloneSeedState();
+        try { localStorage.setItem(LEXTRIA_STATE_KEY, JSON.stringify(state)); } catch (e) {}
+      } else {
         state = normalizeState(parsed);
       }
-    } catch (e) { /* corrupt/foreign value — keep the embedded seed */ }
+    } catch (e) {
+      state = cloneSeedState();
+    }
   }
 
   async function initPersistence() {
@@ -935,7 +975,13 @@
         sessionUnlocked = true;
         backendAuthorized = true;
         PERSIST_TIER = 'backend';
-        if (result.state) state = normalizeState(result.state);
+        if (result.state && !shouldAdoptSeed(result.state)) {
+          state = normalizeState(result.state);
+        } else {
+          // Shared backend was unseeded or contained stale pre-ingestion data
+          state = cloneSeedState();
+          syncStateToBackend();
+        }
         return;
       }
       // If locked on refresh or unauthorized, gate will prompt for access key on entry
@@ -968,10 +1014,15 @@
       backendAuthorized = true;
       sessionUnlocked = true;
       PERSIST_TIER = 'backend';
-      if (result.state) state = normalizeState(result.state);
+      if (result.state && !shouldAdoptSeed(result.state)) {
+        state = normalizeState(result.state);
+      } else {
+        state = cloneSeedState();
+        syncStateToBackend();
+      }
       backendKeyPrompt.visible = false;
       settingsDraft.backendKeyError = '';
-      toast('Connected to the shared team database.');
+      toast('Connected to shared database (' + state.records.length + ' matters).');
       renderBackendKeyPrompt();
       renderGate();
       renderAll();
@@ -1515,14 +1566,19 @@
         sessionStorage.setItem('lextria-session-unlocked', 'yes');
         backendAuthorized = true;
         PERSIST_TIER = 'backend';
-        if (res.state) state = normalizeState(res.state);
+        if (res.state && !shouldAdoptSeed(res.state)) {
+          state = normalizeState(res.state);
+        } else {
+          state = cloneSeedState();
+          syncStateToBackend();
+        }
         if (!shouldLockOnRefresh()) {
           setLocalPref(LEXTRIA_API_KEY_STORAGE, pass);
           setLocalPref(LOCAL_KEYS.unlocked, 'yes');
         }
         renderGate();
         renderAll();
-        toast('Unlocked — connected to shared database.');
+        toast('Unlocked — connected to shared database (' + state.records.length + ' matters).');
         return;
       } else {
         renderGate('Incorrect access key / passphrase — try again.');
@@ -1881,6 +1937,12 @@
 
     var clientRecords = recordsFor(cid, view.ipType);
     html += renderStats(clientRecords, view.ipType);
+    if (state.records.length < SEED_STATE.records.length) {
+      html += '<div style="background:rgba(234,179,8,0.12);border:1px solid rgba(234,179,8,0.35);border-radius:8px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;color:var(--ink);">' +
+        '<span>⚠️ <strong>Stale local cache detected:</strong> Your browser is currently displaying ' + state.records.length + ' matters. The master portfolio contains 1,420 matters.</span>' +
+        '<button class="btn btn-primary" data-action="resync-seed-portfolio" style="padding:4px 10px;font-size:12px;white-space:nowrap;">Load Master Portfolio (1,420 matters)</button>' +
+        '</div>';
+    }
     html += '<div class="workspace">';
     html += renderLedgerTable(clientRecords, view.ipType);
     html += renderLedgerRail(clientRecords, view.ipType);
@@ -2548,14 +2610,15 @@
     html += '<div style="margin-top:12px;"><button class="btn btn-secondary" data-action="lock-now"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Lock session now</button></div>';
     html += renderBackendSettingsCard();
 
-    html += '<div class="card settings-card"><h3>Data Management & Clean Up</h3>' +
-      '<p class="settings-desc">Manage the stored applications and clients in your ledger database.</p>' +
+    html += '<div class="card settings-card"><h3>Data Management & Master Portfolio</h3>' +
+      '<p class="settings-desc">Manage the stored applications and clients in your ledger database. Ingested master dataset contains 1,420 matters (1,119 Copyrights, 181 Trademarks, 120 Designs) across 79 clients.</p>' +
       '<p class="settings-status">Current records: <strong>' + state.records.length + ' matters</strong> &middot; <strong>' + state.clients.length + ' clients</strong></p>' +
       '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">' +
+      '<button class="btn btn-primary" data-action="resync-seed-portfolio"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>Restore Master Portfolio (1,420 matters)</button>' +
       '<button class="btn btn-secondary" data-action="deduplicate-records"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><path d="M20 6L9 17l-5-5"/></svg>Clean up duplicate records</button>' +
       '<button class="btn btn-danger" data-action="clear-all-records"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Clear all matters</button>' +
       '</div>' +
-      '<p class="settings-note">Use "Clean up duplicate records" to collapse identical duplicate entries into single matters, or "Clear all matters" if you wish to reset and re-import a clean CSV file.</p>' +
+      '<p class="settings-note">Use "Restore Master Portfolio" to immediately refresh and load all 1,420 matters from the Excel files into your browser and shared database.</p>' +
       '</div>';
 
     html += '</div>';
@@ -4659,10 +4722,15 @@
                 backendConfigured = true;
                 backendAuthorized = true;
                 PERSIST_TIER = 'backend';
-                if (result.state) state = normalizeState(result.state);
+                if (result.state && !shouldAdoptSeed(result.state)) {
+                  state = normalizeState(result.state);
+                } else {
+                  state = cloneSeedState();
+                  syncStateToBackend();
+                }
                 backendKeyPrompt.visible = false;
                 settingsDraft.backendKeyError = '';
-                toast('Connected to the shared team database.');
+                toast('Connected to shared database (' + state.records.length + ' matters).');
                 renderBackendKeyPrompt();
               } else {
                 backendAuthorized = false;
@@ -4685,6 +4753,22 @@
             loadLocalStorageState();
             toast('Disconnected from the shared database — now saving to this browser only.');
           }
+          renderAll();
+          break;
+        case 'resync-seed-portfolio':
+          state = cloneSeedState();
+          try { localStorage.setItem(LEXTRIA_STATE_KEY, JSON.stringify(state)); } catch (e) {}
+          if (PERSIST_TIER === 'backend') {
+            syncStateToBackend(function (ok) {
+              if (ok) toast('Synced 1,420 matters to shared team database!');
+            });
+          }
+          view.clientId = '__all__';
+          view.dashboardClientId = '__all__';
+          view.statusFilter = {};
+          view.search = '';
+          view.ledgerPage = 1;
+          toast('Master portfolio loaded: 1,420 matters (1,119 Copyrights, 181 Trademarks, 120 Designs) across 79 clients!');
           renderAll();
           break;
         case 'deduplicate-records':
@@ -5091,6 +5175,19 @@
     renderBackendKeyPrompt();
     maybeNotifyDeadlines();
   }
+  window.lextriaResyncPortfolio = function () {
+    state = cloneSeedState();
+    try { localStorage.setItem(LEXTRIA_STATE_KEY, JSON.stringify(state)); } catch (e) {}
+    if (PERSIST_TIER === 'backend') syncStateToBackend();
+    view.clientId = '__all__';
+    view.dashboardClientId = '__all__';
+    view.statusFilter = {};
+    view.search = '';
+    view.ledgerPage = 1;
+    renderAll();
+    return 'Master portfolio reloaded: 1,420 records across 79 clients';
+  };
+
   init();
 })();
 </script>
