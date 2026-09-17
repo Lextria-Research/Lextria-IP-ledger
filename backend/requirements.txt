@@ -1,0 +1,9 @@
+fastapi>=0.110
+uvicorn[standard]>=0.27
+
+# Schema migrations for the sqlite file backend/db.py manages (see alembic.ini
+# and alembic/versions/ at the repo root). The app itself has no ORM and does
+# not depend on SQLAlchemy at runtime -- these two are only needed to run
+# `alembic upgrade` / `alembic revision`.
+alembic>=1.13
+SQLAlchemy>=2.0
