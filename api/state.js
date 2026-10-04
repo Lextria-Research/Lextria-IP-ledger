@@ -26,17 +26,19 @@ let cachedRedis = null;
 
 function cleanSupabaseUrl(raw) {
   if (!raw) return '';
-  let url = raw.trim().replace(/^["']|["']$/g, '').trim();
-  url = url.replace(/\/rest\/v1\/?$/i, '').replace(/\/+$/, '');
-  if (!/^https?:\/\//i.test(url)) {
-    url = 'https://' + url;
+  let url = raw.trim().replace(/^["'`]+|["'`]+$/g, '').trim();
+  const match = url.match(/([a-z0-9_-]+\.supabase\.co)/i);
+  if (match) {
+    return 'https://' + match[1];
   }
-  return url;
+  url = url.replace(/\/rest\/v1\/?$/i, '').replace(/\/+$/, '');
+  url = url.replace(/^(https?:\/\/)+/i, '');
+  return 'https://' + url;
 }
 
 function cleanSupabaseKey(raw) {
   if (!raw) return '';
-  return raw.trim().replace(/^["']|["']$/g, '').trim();
+  return raw.trim().replace(/^["'`]+|["'`]+$/g, '').trim();
 }
 
 function isSupabaseConfigured() {
