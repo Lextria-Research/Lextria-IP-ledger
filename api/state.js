@@ -24,17 +24,32 @@ const STATE_KEY = 'lextria-state';
 let cachedSupabase = null;
 let cachedRedis = null;
 
+function cleanSupabaseUrl(raw) {
+  if (!raw) return '';
+  let url = raw.trim().replace(/^["']|["']$/g, '').trim();
+  url = url.replace(/\/rest\/v1\/?$/i, '').replace(/\/+$/, '');
+  if (!/^https?:\/\//i.test(url)) {
+    url = 'https://' + url;
+  }
+  return url;
+}
+
+function cleanSupabaseKey(raw) {
+  if (!raw) return '';
+  return raw.trim().replace(/^["']|["']$/g, '').trim();
+}
+
 function isSupabaseConfigured() {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
+  const url = cleanSupabaseUrl(process.env.SUPABASE_URL);
+  const key = cleanSupabaseKey(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY);
   return !!(url && key);
 }
 
 function getSupabaseClient() {
   if (!isSupabaseConfigured()) return null;
   if (!cachedSupabase) {
-    const url = process.env.SUPABASE_URL.trim().replace(/\/rest\/v1\/?$/i, '').replace(/\/+$/, '');
-    const key = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY).trim();
+    const url = cleanSupabaseUrl(process.env.SUPABASE_URL);
+    const key = cleanSupabaseKey(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY);
     cachedSupabase = createClient(url, key, {
       auth: { persistSession: false }
     });
