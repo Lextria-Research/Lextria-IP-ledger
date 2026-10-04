@@ -20,10 +20,15 @@ if (!supabaseUrl || !serviceKey) {
   process.exit(1);
 }
 
-const backupPath = path.join(__dirname, '..', 'data', 'portfolio_backup.json');
+let backupPath = path.join(__dirname, '..', 'data', 'portfolio_backup.json');
 if (!fs.existsSync(backupPath)) {
-  console.error('❌ Could not find data/portfolio_backup.json');
-  process.exit(1);
+  const externalPath = path.join(process.env.USERPROFILE || 'C:\\Users\\ASUS', 'Documents', 'lextria-backups', 'portfolio_backup.json');
+  if (fs.existsSync(externalPath)) {
+    backupPath = externalPath;
+  } else {
+    console.error('❌ Could not find portfolio_backup.json in data/ or C:\\Users\\ASUS\\Documents\\lextria-backups\\');
+    process.exit(1);
+  }
 }
 
 const rawData = fs.readFileSync(backupPath, 'utf8');
