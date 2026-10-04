@@ -70,10 +70,14 @@ function extractProvidedKey(req) {
 }
 
 function isAuthorized(req) {
-  const required = process.env.LEXTRIA_API_KEY;
-  if (!required) return true; // no key configured — open access
+  const rawRequired = process.env.LEXTRIA_API_KEY;
+  if (!rawRequired) return true; // no key configured — open access
+  const required = rawRequired.trim().replace(/^["']|["']$/g, '');
+  if (!required) return true;
   const provided = extractProvidedKey(req);
-  return !!provided && provided === required;
+  if (!provided) return false;
+  const cleanProvided = provided.trim().replace(/^["']|["']$/g, '');
+  return cleanProvided === required;
 }
 
 module.exports = async function handler(req, res) {
