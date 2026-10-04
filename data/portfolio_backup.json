@@ -424,6 +424,10 @@
       "id": "c-85",
       "name": "Bharath K Bhat",
       "created": "2026-09-17T06:21:07.727Z"
+    },
+    {
+      "id": "c-86",
+      "name": "TADIKELA SUBBAIAH TRUST"
     }
   ],
   "records": [
@@ -2416,32 +2420,34 @@
       "cls": "35",
       "appno": "7387538",
       "markType": "Device/Logo",
-      "desc": "Social media marketing, Social media strategy and marketing consultancy, Social media marketing services, On-line customer-based social media brand marketing services, Advertising and marketing services provided by means of social media, Providing marketing consulting in the field of social media, Event management services being conducting of commercial events, Event management services being organising and conducting of marketing promotional events, Event management services being arranging and conducting of marketing promotional events, Business management, Commercial business management, Business management consulting, Business management planning, Business management advice, Business management supervision, Business process management, Business management assistance Business management and business administration, Business management analysis, Organisation of advertising events, Organising and conducting of commercial events, Organization of promotional events, Publicity in the field of tourism and travel, Advertising in the field of tourism and travel, Publicity services in the field of tourism and travel, Advertising services in the field of tourism and travel, Advertisement and promotion of wrokshops",
-      "filingDate": "2025-09-12",
-      "registrationDate": "",
-      "lastRenewalDate": "",
-      "renewDate": "",
       "status": "hearing_fixed",
+      "desc": "Social media marketing, Social media strategy and marketing consultancy, Social media marketing services, On-line customer-based social media brand marketing services, Advertising and marketing services provided by means of social media, Providing marketing consulting in the field of social media, Event management services being conducting of commercial events, Event management services being organising and conducting of marketing promotional events, Event management services being arranging and conducting of marketing promotional events, Business management, Commercial business management, Business management consulting, Business management planning, Business management advice, Business management supervision, Business process management, Business management assistance Business management and business administration, Business management analysis, Organisation of advertising events, Organising and conducting of commercial events, Organization of promotional events, Publicity in the field of tourism and travel, Advertising in the field of tourism and travel, Publicity services in the field of tourism and travel, Advertising services in the field of tourism and travel, Advertisement and promotion of wrokshops",
       "action": "Hearing scheduled",
-      "actionDate": "2026-01-12",
-      "notes": "",
+      "actionDate": null,
+      "renewDate": null,
+      "filingDate": null,
+      "priorityDate": null,
+      "registrationDate": null,
+      "lastRenewalDate": null,
+      "designExtended": false,
+      "miscFilings": [],
       "applicants": [
         {
           "name": "Udupiya Kandeera",
           "entityType": "Individual",
           "authorizedPerson": "",
+          "email": "",
+          "phone": "",
           "address": "",
           "nationality": "Indian",
           "countryOfResidence": "India",
-          "gender": "",
-          "email": "",
-          "phone": ""
+          "gender": ""
         }
       ],
       "authors": [],
       "contributors": [],
-      "timeline": [],
-      "miscFilings": []
+      "logoUrl": "",
+      "timeline": []
     },
     {
       "id": "t-57",
@@ -2560,32 +2566,34 @@
       "cls": "5",
       "appno": "6599169",
       "markType": "Word",
-      "desc": "Pharmaceuticals, Antibacterial pharmaceuticals, Cardiovascular pharmaceuticals, Homeopathic pharmaceuticals, Ocular pharmaceuticals, Antidiabetic pharmaceuticals, Empty capsules for pharmaceuticals, Gelatin capsules for pharmaceuticals, Capsules sold empty for pharmaceuticals, Injectable pharmaceuticals for treatment of anaphylactic reactions.",
-      "filingDate": "2024-08-30",
-      "registrationDate": "",
-      "lastRenewalDate": "",
-      "renewDate": "",
       "status": "hearing_fixed",
+      "desc": "Pharmaceuticals, Antibacterial pharmaceuticals, Cardiovascular pharmaceuticals, Homeopathic pharmaceuticals, Ocular pharmaceuticals, Antidiabetic pharmaceuticals, Empty capsules for pharmaceuticals, Gelatin capsules for pharmaceuticals, Capsules sold empty for pharmaceuticals, Injectable pharmaceuticals for treatment of anaphylactic reactions.",
       "action": "File response to Examination Report FER FILED 24/04/2026 Hearing notice received on 05/08/2026. hearing date – Date yet to be announced;",
-      "actionDate": "2026-09-23",
-      "notes": "",
+      "actionDate": null,
+      "renewDate": "2034-08-30",
+      "filingDate": "2024-08-30",
+      "priorityDate": null,
+      "registrationDate": null,
+      "lastRenewalDate": null,
+      "designExtended": false,
+      "miscFilings": [],
       "applicants": [
         {
           "name": "Divkin Pharmaceuticals Private Limited",
           "entityType": "Company",
           "authorizedPerson": "",
+          "email": "",
+          "phone": "",
           "address": "",
           "nationality": "Indian",
           "countryOfResidence": "India",
-          "gender": "",
-          "email": "",
-          "phone": ""
+          "gender": ""
         }
       ],
       "authors": [],
       "contributors": [],
-      "timeline": [],
-      "miscFilings": []
+      "logoUrl": "",
+      "timeline": []
     },
     {
       "id": "t-61",
@@ -2740,32 +2748,34 @@
       "cls": "35",
       "appno": "6633231",
       "markType": "Device/Logo",
-      "desc": "Human resources management and recruitment services; Human resources consultancy; Human resources administration; Training of personnel in the areas of recruitment, human resources and business management.",
-      "filingDate": "2024-09-20",
-      "registrationDate": "",
-      "lastRenewalDate": "",
-      "renewDate": "",
       "status": "response_filed",
+      "desc": "Human resources management and recruitment services; Human resources consultancy; Human resources administration; Training of personnel in the areas of recruitment, human resources and business management.",
       "action": "File response to Examination Report on 08/05/2026",
-      "actionDate": "2026-09-23",
-      "notes": "",
+      "actionDate": null,
+      "renewDate": "2034-09-20",
+      "filingDate": "2024-09-20",
+      "priorityDate": null,
+      "registrationDate": null,
+      "lastRenewalDate": null,
+      "designExtended": false,
+      "miscFilings": [],
       "applicants": [
         {
           "name": "Visara Human Capital Services LLP",
           "entityType": "Company",
           "authorizedPerson": "",
+          "email": "",
+          "phone": "",
           "address": "",
           "nationality": "Indian",
           "countryOfResidence": "India",
-          "gender": "",
-          "email": "",
-          "phone": ""
+          "gender": ""
         }
       ],
       "authors": [],
       "contributors": [],
-      "timeline": [],
-      "miscFilings": []
+      "logoUrl": "",
+      "timeline": []
     },
     {
       "id": "t-66",
@@ -3748,32 +3758,46 @@
       "cls": "5",
       "appno": "6989840",
       "markType": "Device/Logo",
+      "status": "response_filed",
       "desc": "oils, Pain relief medicines, Herbal extracts, other than essential oils, for medical purposes, Preparations for the relief of pain, Pain relief preparations",
-      "filingDate": "2025-03-05",
-      "registrationDate": "",
-      "lastRenewalDate": "",
-      "renewDate": "",
-      "status": "objected",
       "action": "File response to Examination Report DUE 05/09/2026",
-      "actionDate": "2026-09-05",
-      "notes": "",
+      "actionDate": null,
+      "renewDate": "2035-03-05",
+      "filingDate": "2025-03-05",
+      "priorityDate": null,
+      "registrationDate": null,
+      "lastRenewalDate": null,
+      "designExtended": false,
+      "miscFilings": [],
       "applicants": [
         {
           "name": "Lathashekhar",
           "entityType": "Individual",
           "authorizedPerson": "",
+          "email": "",
+          "phone": "",
           "address": "",
           "nationality": "Indian",
           "countryOfResidence": "India",
-          "gender": "",
-          "email": "",
-          "phone": ""
+          "gender": ""
         }
       ],
       "authors": [],
       "contributors": [],
-      "timeline": [],
-      "miscFilings": []
+      "logoUrl": "",
+      "timeline": [
+        {
+          "id": "st-1790415782970-1360",
+          "fromStatus": "objected",
+          "fromStatusLabel": "Objected",
+          "toStatus": "response_filed",
+          "toStatusLabel": "Response Filed",
+          "effectiveDate": "2026-09-26",
+          "deadline": "2026-09-05",
+          "remarks": "File response to Examination Report DUE 05/09/2026",
+          "timestamp": "2026-09-26T09:43:02.970Z"
+        }
+      ]
     },
     {
       "id": "t-94",
@@ -3784,32 +3808,46 @@
       "cls": "44",
       "appno": "7017614",
       "markType": "Word",
+      "status": "response_filed",
       "desc": "Orthopaedic surgery services,Professional consultancy in the field of medical technology, medical surgery and orthopaedics,Medical and healthcare clinics,Medical treatment services provided by clinics and hospitals",
-      "filingDate": "2025-05-20",
-      "registrationDate": "",
-      "lastRenewalDate": "",
-      "renewDate": "",
-      "status": "objected",
       "action": "File response to Examination Report",
-      "actionDate": "2026-09-12",
-      "notes": "",
+      "actionDate": null,
+      "renewDate": "2035-05-20",
+      "filingDate": "2025-05-20",
+      "priorityDate": null,
+      "registrationDate": null,
+      "lastRenewalDate": null,
+      "designExtended": false,
+      "miscFilings": [],
       "applicants": [
         {
           "name": "Chopperla Siva Kumara Sai Krishna Dattatreya Sita Ram",
           "entityType": "Individual",
           "authorizedPerson": "",
+          "email": "",
+          "phone": "",
           "address": "",
           "nationality": "Indian",
           "countryOfResidence": "India",
-          "gender": "",
-          "email": "",
-          "phone": ""
+          "gender": ""
         }
       ],
       "authors": [],
       "contributors": [],
-      "timeline": [],
-      "miscFilings": []
+      "logoUrl": "",
+      "timeline": [
+        {
+          "id": "st-1790414119610-2525",
+          "fromStatus": "objected",
+          "fromStatusLabel": "Objected",
+          "toStatus": "response_filed",
+          "toStatusLabel": "Response Filed",
+          "effectiveDate": "2026-09-26",
+          "deadline": "2026-09-12",
+          "remarks": "File response to Examination Report",
+          "timestamp": "2026-09-26T09:15:19.610Z"
+        }
+      ]
     },
     {
       "id": "t-95",
@@ -3820,32 +3858,46 @@
       "cls": "9",
       "appno": "7918670",
       "markType": "Word",
+      "status": "response_filed",
       "desc": "Security systems, video surveillance cameras, Video surveillance systems, Electronic security tags, electronic security and surveillance apparatus, Network monitoring cameras for surveillance, Surveillance cameras, Recorded and downloadable computer software, Electronic tags for security control purposes, proprietary computer software for operating and managing surveillance systems, security control systems, alarm monitoring systems, security inspection apparatus.",
-      "filingDate": "2026-10-08",
-      "registrationDate": "",
-      "lastRenewalDate": "",
-      "renewDate": "",
-      "status": "objected",
       "action": "File response to Examination Report",
-      "actionDate": "2026-09-17",
-      "notes": "Contact: sajan@saptronix.com",
+      "actionDate": null,
+      "renewDate": "2036-10-08",
+      "filingDate": "2026-10-08",
+      "priorityDate": null,
+      "registrationDate": null,
+      "lastRenewalDate": null,
+      "designExtended": false,
+      "miscFilings": [],
       "applicants": [
         {
           "name": "Saptronix Solutions Pvt. Ltd.",
           "entityType": "Individual",
           "authorizedPerson": "",
+          "email": "sajan@saptronix.com",
+          "phone": "",
           "address": "",
           "nationality": "Indian",
           "countryOfResidence": "India",
-          "gender": "",
-          "email": "sajan@saptronix.com",
-          "phone": ""
+          "gender": ""
         }
       ],
       "authors": [],
       "contributors": [],
-      "timeline": [],
-      "miscFilings": []
+      "logoUrl": "",
+      "timeline": [
+        {
+          "id": "st-1790414153536-4366",
+          "fromStatus": "objected",
+          "fromStatusLabel": "Objected",
+          "toStatus": "response_filed",
+          "toStatusLabel": "Response Filed",
+          "effectiveDate": "2026-09-26",
+          "deadline": null,
+          "remarks": "File response to Examination Report",
+          "timestamp": "2026-09-26T09:15:53.536Z"
+        }
+      ]
     },
     {
       "id": "t-96",
@@ -3856,32 +3908,46 @@
       "cls": "44",
       "appno": "7062259",
       "markType": "Device/Logo",
+      "status": "response_filed",
       "desc": "Healthcare services, Human healthcare services, Medical services in the field of diabetes, Provision of information in the field of diabetes via the Internet, Medical services, Medical diagnostic services, Providing healthcare services, Provision of information via the Internet in the field of diabetes, Provision of information in the field of diabetes via the Internet",
-      "filingDate": "2025-06-14",
-      "registrationDate": "",
-      "lastRenewalDate": "",
-      "renewDate": "",
-      "status": "objected",
       "action": "File response to Examination Report",
-      "actionDate": "2026-09-14",
-      "notes": "",
+      "actionDate": null,
+      "renewDate": "2035-06-14",
+      "filingDate": "2025-06-14",
+      "priorityDate": null,
+      "registrationDate": null,
+      "lastRenewalDate": null,
+      "designExtended": false,
+      "miscFilings": [],
       "applicants": [
         {
           "name": "Manipal Academy of Higher Education (MAHE)",
           "entityType": "Individual",
           "authorizedPerson": "",
+          "email": "geena.skaria@manipal.edu",
+          "phone": "",
           "address": "",
           "nationality": "Indian",
           "countryOfResidence": "India",
-          "gender": "",
-          "email": "geena.skaria@manipal.edu",
-          "phone": ""
+          "gender": ""
         }
       ],
       "authors": [],
       "contributors": [],
-      "timeline": [],
-      "miscFilings": []
+      "logoUrl": "",
+      "timeline": [
+        {
+          "id": "st-1790414136270-4007",
+          "fromStatus": "objected",
+          "fromStatusLabel": "Objected",
+          "toStatus": "response_filed",
+          "toStatusLabel": "Response Filed",
+          "effectiveDate": "2026-09-26",
+          "deadline": "2026-09-14",
+          "remarks": "File response to Examination Report",
+          "timestamp": "2026-09-26T09:15:36.270Z"
+        }
+      ]
     },
     {
       "id": "t-97",
@@ -4540,32 +4606,34 @@
       "cls": "42",
       "appno": "6148193",
       "markType": "Device/Logo",
-      "desc": "Building modular optoelectronic processors and interconnects for data centres and near-edge compute services",
-      "filingDate": "2023-10-13",
-      "registrationDate": "2026-08-27",
-      "lastRenewalDate": "",
-      "renewDate": "2036-08-27",
       "status": "registered",
+      "desc": "Building modular optoelectronic processors and interconnects for data centres and near-edge compute services",
       "action": "File renewal before expiry (10-year term)",
-      "actionDate": "2023-10-13",
-      "notes": "Certificate No: 3673669 | Journal: 2166 (2024-02-26) | Attorney: S.HIMABINDU[31017] | Comments: is change in attorney required?",
+      "actionDate": null,
+      "renewDate": "2033-10-13",
+      "filingDate": "2023-10-13",
+      "priorityDate": null,
+      "registrationDate": "2026-08-27",
+      "lastRenewalDate": null,
+      "designExtended": false,
+      "miscFilings": [],
       "applicants": [
         {
           "name": "Lightspeed Photonics Private Limited",
           "entityType": "Company",
           "authorizedPerson": "",
+          "email": "",
+          "phone": "",
           "address": "",
           "nationality": "Indian",
           "countryOfResidence": "India",
-          "gender": "",
-          "email": "",
-          "phone": ""
+          "gender": ""
         }
       ],
       "authors": [],
       "contributors": [],
-      "timeline": [],
-      "miscFilings": []
+      "logoUrl": "",
+      "timeline": []
     },
     {
       "id": "t-116",
@@ -4756,32 +4824,46 @@
       "cls": "35",
       "appno": "6281301",
       "markType": "DEVICE",
+      "status": "refused",
       "desc": "",
-      "filingDate": "",
-      "registrationDate": "",
-      "lastRenewalDate": "",
-      "renewDate": "",
-      "status": "hearing_fixed",
       "action": "Hearing scheduled",
-      "actionDate": "2026-09-16",
-      "notes": "Status details: HEARING 16/09/2026",
+      "actionDate": null,
+      "renewDate": null,
+      "filingDate": null,
+      "priorityDate": null,
+      "registrationDate": null,
+      "lastRenewalDate": null,
+      "designExtended": false,
+      "miscFilings": [],
       "applicants": [
         {
           "name": "RAVINARAYANA M",
           "entityType": "Individual",
           "authorizedPerson": "",
+          "email": "",
+          "phone": "",
           "address": "",
           "nationality": "Indian",
           "countryOfResidence": "India",
-          "gender": "",
-          "email": "",
-          "phone": ""
+          "gender": ""
         }
       ],
       "authors": [],
       "contributors": [],
-      "timeline": [],
-      "miscFilings": []
+      "logoUrl": "",
+      "timeline": [
+        {
+          "id": "st-1790418917656-8791",
+          "fromStatus": "hearing_fixed",
+          "fromStatusLabel": "Hearing Fixed",
+          "toStatus": "refused",
+          "toStatusLabel": "Refused",
+          "effectiveDate": "2026-09-26",
+          "deadline": "2026-09-16",
+          "remarks": "Hearing scheduled",
+          "timestamp": "2026-09-26T10:35:17.656Z"
+        }
+      ]
     },
     {
       "id": "t-122",
@@ -4828,32 +4910,34 @@
       "cls": "35",
       "appno": "6270738",
       "markType": "WORD",
-      "desc": "",
-      "filingDate": "",
-      "registrationDate": "",
-      "lastRenewalDate": "",
-      "renewDate": "",
       "status": "hearing_fixed",
+      "desc": "",
       "action": "Hearing scheduled",
-      "actionDate": "2026-09-01",
-      "notes": "Status details: GEARING 01/09/2026",
+      "actionDate": null,
+      "renewDate": null,
+      "filingDate": null,
+      "priorityDate": null,
+      "registrationDate": null,
+      "lastRenewalDate": null,
+      "designExtended": false,
+      "miscFilings": [],
       "applicants": [
         {
           "name": "RAVINARAYANA M",
           "entityType": "Individual",
           "authorizedPerson": "",
+          "email": "",
+          "phone": "",
           "address": "",
           "nationality": "Indian",
           "countryOfResidence": "India",
-          "gender": "",
-          "email": "",
-          "phone": ""
+          "gender": ""
         }
       ],
       "authors": [],
       "contributors": [],
-      "timeline": [],
-      "miscFilings": []
+      "logoUrl": "",
+      "timeline": []
     },
     {
       "id": "t-124",
@@ -6736,32 +6820,34 @@
       "cls": "28",
       "appno": "7063477",
       "markType": "DEVICE",
-      "desc": "",
-      "filingDate": "2025-06-16",
-      "registrationDate": "",
-      "lastRenewalDate": "",
-      "renewDate": "2035-06-16",
       "status": "accepted_advertised",
+      "desc": "",
       "action": "Hearing scheduled",
-      "actionDate": "2026-01-16",
-      "notes": "Status details: 16/01/2026 -Expedited examination filing ACCEPTED",
+      "actionDate": null,
+      "renewDate": "2035-06-16",
+      "filingDate": "2025-06-16",
+      "priorityDate": null,
+      "registrationDate": null,
+      "lastRenewalDate": null,
+      "designExtended": false,
+      "miscFilings": [],
       "applicants": [
         {
           "name": "RESPONSIBLE ECO TOYS LLP",
           "entityType": "Individual",
           "authorizedPerson": "",
+          "email": "",
+          "phone": "",
           "address": "",
           "nationality": "Indian",
           "countryOfResidence": "India",
-          "gender": "",
-          "email": "",
-          "phone": ""
+          "gender": ""
         }
       ],
       "authors": [],
       "contributors": [],
-      "timeline": [],
-      "miscFilings": []
+      "logoUrl": "",
+      "timeline": []
     },
     {
       "id": "t-177",
@@ -60535,10 +60621,136 @@
       ],
       "timeline": [],
       "miscFilings": []
+    },
+    {
+      "id": "t-1440",
+      "clientId": "c-1",
+      "ipType": "trademark",
+      "code": "TR162",
+      "brand": "Newrosaarathi",
+      "cls": "42",
+      "appno": "8022638",
+      "markType": "Word",
+      "status": "filed",
+      "desc": "Software as a service [SaaS] featuring artificial intelligence software for software development, Software as a service [SaaS] featuring software using artificial intelligence for software development, Information technology services for the pharmaceutical and healthcare industries, Design and development of computers and computer software, Research, development and design of computer software, Healthcare assistance software, Design and development of computer software for use with medical technology, Providing temporary use of non-downloadable software, temporary use of non-downloadable software for healthcare, Artificial intelligence as a service [AIaaS] featuring software using artificial intelligence to control software tools, Software as a service [SaaS] featuring artificial intelligence software for healthcare and rehabilitation, Rehabilitation software, Machine-human interaction software, Medical software design and development, Artificial intelligence as a service [AIaaS] featuring software using artificial intelligence for machine human interaction, Providing computer software technical support services in the field of medical diagnostics, Pharmaceutical research, Healthcare research, Medical technology research, Medical research laboratory services, Scientific and medical research and development, Computer programming in the medical field, Artificial intelligence as a service [AIaaS] featuring software using artificial intelligence for machine-human interaction.",
+      "action": "",
+      "actionDate": null,
+      "renewDate": null,
+      "filingDate": null,
+      "priorityDate": null,
+      "registrationDate": null,
+      "lastRenewalDate": null,
+      "designExtended": false,
+      "miscFilings": [],
+      "applicants": [],
+      "authors": [],
+      "contributors": [],
+      "logoUrl": "",
+      "timeline": []
+    },
+    {
+      "id": "t-1441",
+      "clientId": "c-86",
+      "ipType": "trademark",
+      "code": "TR153",
+      "brand": "subbaiah INSTITUTE OF MEDICAL SCIENCES SHIVAMOGGA",
+      "cls": "41",
+      "appno": "7941918",
+      "markType": "Device/Logo",
+      "status": "filed",
+      "desc": "",
+      "action": "",
+      "actionDate": null,
+      "renewDate": null,
+      "filingDate": null,
+      "priorityDate": null,
+      "registrationDate": null,
+      "lastRenewalDate": null,
+      "designExtended": false,
+      "miscFilings": [],
+      "applicants": [],
+      "authors": [],
+      "contributors": [],
+      "logoUrl": "",
+      "timeline": []
     }
   ],
-  "nextRecordSeq": 1440,
-  "nextClientSeq": 86,
+  "nextRecordSeq": 1442,
+  "nextClientSeq": 87,
   "timelineViews": {},
-  "portfolioVersion": "2026-09-17-portfolio-v2"
+  "portfolioVersion": "2026-09-17-portfolio-v3",
+  "log": [
+    {
+      "ts": "2026-09-26T10:42:50.496Z",
+      "summary": "Added subbaiah INSTITUTE OF MEDICAL SCIENCES SHIVAMOGGA (7941918) — TADIKELA SUBBAIAH TRUST"
+    },
+    {
+      "ts": "2026-09-26T10:40:32.569Z",
+      "summary": "Added Newrosaarathi (8022638) — PRS Neurosciences and Mechatronics Research Institute Pvt. Ltd."
+    },
+    {
+      "ts": "2026-09-26T10:36:35.732Z",
+      "summary": "Edited MAITHRI (6270738) — Ravinarayana M."
+    },
+    {
+      "ts": "2026-09-26T10:36:18.444Z",
+      "summary": "Edited PAINKLEAR (6989840) — Lathashekhar"
+    },
+    {
+      "ts": "2026-09-26T10:36:04.892Z",
+      "summary": "Edited ORTHORAM (7017614) — Chopperla Siva Kumara Sai Krishna Dattatreya Sita Ram"
+    },
+    {
+      "ts": "2026-09-26T10:35:49.313Z",
+      "summary": "Edited MAITHRI (6281301) — Ravinarayana M."
+    },
+    {
+      "ts": "2026-09-26T10:35:31.705Z",
+      "summary": "Edited EDDY(Electronic Diabetes Diary) (7062259) — Manipal Academy of Higher Education (MAHE)"
+    },
+    {
+      "ts": "2026-09-26T10:35:17.656Z",
+      "summary": "Edited MAITHRI (6281301) — Ravinarayana M."
+    },
+    {
+      "ts": "2026-09-26T10:34:44.140Z",
+      "summary": "Edited DIVROSE (6599169) — Divkin Pharmaceuticals Private Limited"
+    },
+    {
+      "ts": "2026-09-26T10:34:32.038Z",
+      "summary": "Edited \" VISARA HUMAN CAPITAL SERVICES - CREATING ABUNDANCE\" (6633231) — Visara Human Capital Services LLP"
+    },
+    {
+      "ts": "2026-09-26T09:43:02.970Z",
+      "summary": "Edited PAINKLEAR (6989840) — Lathashekhar"
+    },
+    {
+      "ts": "2026-09-26T09:42:28.353Z",
+      "summary": "Edited TUMBI TOYS (7063477) — Responsible Eco Toys Llp"
+    },
+    {
+      "ts": "2026-09-26T09:15:53.536Z",
+      "summary": "Edited KNEURON (7918670) — Saptronix Solutions Pvt. Ltd."
+    },
+    {
+      "ts": "2026-09-26T09:15:36.270Z",
+      "summary": "Edited EDDY(Electronic Diabetes Diary) (7062259) — Manipal Academy of Higher Education (MAHE)"
+    },
+    {
+      "ts": "2026-09-26T09:15:19.610Z",
+      "summary": "Edited ORTHORAM (7017614) — Chopperla Siva Kumara Sai Krishna Dattatreya Sita Ram"
+    },
+    {
+      "ts": "2026-09-26T09:15:01.542Z",
+      "summary": "Edited UDUPIYA KANDEERA (7387538) — Udupiya Kandeera"
+    },
+    {
+      "ts": "2026-09-26T09:14:39.315Z",
+      "summary": "Edited LIGHTSPEED PHOTONICS (6148193) — Lightspeed Photonics Private Limited"
+    }
+  ],
+  "settings": {
+    "loginEnabled": false,
+    "loginHash": null
+  }
 }

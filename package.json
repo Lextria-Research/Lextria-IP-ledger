@@ -9,6 +9,7 @@
     "url": "https://github.com/Lextria-Research/Lextria-IP-ledger.git"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.117.2",
     "@upstash/redis": "^1.34.3"
   }
 }

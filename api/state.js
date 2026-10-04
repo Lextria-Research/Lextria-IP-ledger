@@ -6,44 +6,55 @@
 //                   -> 4xx { error: string } when not configured / not authorized
 //   any other method -> 405
 //
-// Storage: Vercel retired its native "KV" product (Storage tab) in December 2024
-// and migrated existing stores to Upstash Redis, reachable through the Vercel
-// Marketplace. This function therefore talks to Redis via `@upstash/redis`
-// rather than the now-deprecated `@vercel/kv` package — see README.md for the
-// exact "add a Redis integration" steps in today's Vercel dashboard. The
-// integration still injects KV_REST_API_URL / KV_REST_API_TOKEN (the same
-// names the old KV product used), which is what this file reads.
+// Primary Storage: Supabase PostgreSQL (lextria_state table)
+//   - SUPABASE_URL: Project URL (e.g. https://xxx.supabase.co)
+//   - SUPABASE_SERVICE_ROLE_KEY: Service role secret key to read/write with RLS
 //
-// "configured" means those env vars are present. If they aren't, this always
-// returns configured:false rather than erroring — a plain deploy with no Redis
-// integration added yet is the normal zero-config case, and the client falls
-// back to localStorage.
+// Fallback Storage: Upstash Redis (Vercel Marketplace)
+//   - KV_REST_API_URL / KV_REST_API_TOKEN
 //
-// "authorized" is a lightweight bearer-token check against process.env.LEXTRIA_API_KEY,
-// read from either an `Authorization: Bearer <key>` header or a custom `X-Lextria-Key`
-// header (whichever the caller sends). If LEXTRIA_API_KEY is not set, every request is
-// treated as authorized — see the README for why that's insecure for real client data
-// and should be set before this is used for anything sensitive.
+// Security:
+//   - LEXTRIA_API_KEY: Team access key checked via 'Authorization: Bearer <key>' or 'X-Lextria-Key: <key>'
 
+const { createClient } = require('@supabase/supabase-js');
 const { Redis } = require('@upstash/redis');
 
 const STATE_KEY = 'lextria-state';
 
-let cachedClient = null;
+let cachedSupabase = null;
+let cachedRedis = null;
+
+function isSupabaseConfigured() {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
+  return !!(url && key);
+}
+
+function getSupabaseClient() {
+  if (!isSupabaseConfigured()) return null;
+  if (!cachedSupabase) {
+    const url = process.env.SUPABASE_URL.trim().replace(/\/rest\/v1\/?$/i, '').replace(/\/+$/, '');
+    const key = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY).trim();
+    cachedSupabase = createClient(url, key, {
+      auth: { persistSession: false }
+    });
+  }
+  return cachedSupabase;
+}
 
 function isKvConfigured() {
   return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
 }
 
-function getClient() {
+function getRedisClient() {
   if (!isKvConfigured()) return null;
-  if (!cachedClient) {
-    cachedClient = new Redis({
+  if (!cachedRedis) {
+    cachedRedis = new Redis({
       url: process.env.KV_REST_API_URL,
       token: process.env.KV_REST_API_TOKEN
     });
   }
-  return cachedClient;
+  return cachedRedis;
 }
 
 function extractProvidedKey(req) {
@@ -60,7 +71,7 @@ function extractProvidedKey(req) {
 
 function isAuthorized(req) {
   const required = process.env.LEXTRIA_API_KEY;
-  if (!required) return true; // no key configured — open access (see README security note)
+  if (!required) return true; // no key configured — open access
   const provided = extractProvidedKey(req);
   return !!provided && provided === required;
 }
@@ -71,28 +82,52 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const redis = getClient();
+  const supabase = getSupabaseClient();
+  const redis = !supabase ? getRedisClient() : null;
 
-  if (!redis) {
+  if (!supabase && !redis) {
     if (req.method === 'GET') {
       res.status(200).json({ configured: false, authorized: false, state: null });
     } else {
-      res.status(400).json({ error: 'Shared backend is not configured for this deployment. Add a Redis integration from the Vercel Marketplace.' });
+      res.status(400).json({
+        error: 'Shared backend is not configured for this deployment. Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in Vercel settings.'
+      });
     }
     return;
   }
 
   const authorized = isAuthorized(req);
 
+  // GET
   if (req.method === 'GET') {
     if (!authorized) {
       res.status(200).json({ configured: true, authorized: false, state: null });
       return;
     }
+
     try {
+      if (supabase) {
+        const { data, error } = await supabase
+          .from('lextria_state')
+          .select('state')
+          .eq('id', STATE_KEY)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Supabase query error:', error);
+          res.status(500).json({ configured: true, authorized: true, state: null, error: 'Could not read from Supabase database.' });
+          return;
+        }
+
+        res.status(200).json({ configured: true, authorized: true, state: (data && data.state) || null });
+        return;
+      }
+
+      // Redis fallback
       const stored = await redis.get(STATE_KEY);
       res.status(200).json({ configured: true, authorized: true, state: stored || null });
     } catch (err) {
+      console.error('Database read error:', err);
       res.status(500).json({ configured: true, authorized: true, state: null, error: 'Could not read from the shared database.' });
     }
     return;
@@ -103,22 +138,44 @@ module.exports = async function handler(req, res) {
     res.status(401).json({ error: 'Unauthorized — this deployment requires a valid shared backend access key.' });
     return;
   }
+
   let body;
   try {
-    body = req.body; // Vercel parses this from JSON automatically via the Content-Type header;
-                      // accessing it can throw on malformed JSON, hence the try/catch.
+    body = req.body;
   } catch (e) {
     res.status(400).json({ error: 'Malformed JSON in request body.' });
     return;
   }
+
   if (!body || typeof body !== 'object') {
     res.status(400).json({ error: 'Request body must be a JSON object (the full ledger state).' });
     return;
   }
+
   try {
+    if (supabase) {
+      const { error } = await supabase
+        .from('lextria_state')
+        .upsert(
+          { id: STATE_KEY, state: body, updated_at: new Date().toISOString() },
+          { onConflict: 'id' }
+        );
+
+      if (error) {
+        console.error('Supabase upsert error:', error);
+        res.status(500).json({ error: 'Could not save to Supabase: ' + (error.message || 'unknown error') });
+        return;
+      }
+
+      res.status(200).json({ ok: true });
+      return;
+    }
+
+    // Redis fallback
     await redis.set(STATE_KEY, body);
     res.status(200).json({ ok: true });
   } catch (err) {
+    console.error('Database write error:', err);
     res.status(500).json({ error: 'Could not save to the shared database.' });
   }
 };

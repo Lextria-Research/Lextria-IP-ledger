@@ -37,26 +37,28 @@ below.
 
 ## 2. Optional: a shared team database
 
-This lets everyone who has the access key see and edit the same live data,
-matching how the Claude-hosted version of this dashboard behaves for a team
-today.
+This lets everyone who has the access key see and edit the same live data.
 
-1. In your Vercel project, go to the **Storage** tab and add a Redis
-   integration (Vercel retired its own built-in "KV" product in December
-   2024 and now offers Redis through the Marketplace — **Upstash for Redis**
-   is a solid, generous-free-tier default). This automatically injects the
-   right environment variables (`KV_REST_API_URL`, `KV_REST_API_TOKEN`) into
-   your project and redeploys it — you don't set these yourself.
-2. Go to **Settings -> Environment Variables** in your Vercel project and add
-   `LEXTRIA_API_KEY` with a long, random secret of your choosing (a password
-   manager's "generate password" feature works well). Redeploy after adding
-   it — environment variable changes need a redeploy to take effect.
-3. Open the app. Since a shared backend now exists but your browser doesn't
-   know the key yet, you'll see a small "Connect to shared team database"
-   prompt in the corner — paste the key there. (You can also do this later,
-   or on another device, from **Settings -> Shared backend**.)
-4. Anyone else who opens the link and enters the same key sees and edits the
-   same live data.
+### Primary Database: Supabase (PostgreSQL)
+
+1. Create a table in your Supabase project's SQL Editor:
+   ```sql
+   create table if not exists lextria_state (
+     id text primary key,
+     state jsonb not null,
+     updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+   );
+   ```
+2. In your Vercel project, go to **Settings -> Environment Variables** and add:
+   - `SUPABASE_URL`: your Supabase Project URL (e.g. `https://xxx.supabase.co`)
+   - `SUPABASE_SERVICE_ROLE_KEY`: your `service_role` secret key
+   - `LEXTRIA_API_KEY`: a long, random secret password of your choice to gate team access
+3. To seed or restore your portfolio data into Supabase:
+   ```bash
+   node scripts/seed-supabase.js "<SUPABASE_URL>" "<SUPABASE_SERVICE_ROLE_KEY>"
+   ```
+
+*(Upstash Redis via `KV_REST_API_URL` / `KV_REST_API_TOKEN` remains supported as a legacy fallback).*
 
 If you skip this section entirely, the app keeps working fine in
 `localStorage`-only mode from step 1 — nothing breaks.
