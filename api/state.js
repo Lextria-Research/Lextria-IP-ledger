@@ -119,7 +119,7 @@ module.exports = async function handler(req, res) {
 
         if (error) {
           console.error('Supabase query error:', error);
-          res.status(500).json({ configured: true, authorized: true, state: null, error: 'Could not read from Supabase database.' });
+          res.status(500).json({ configured: true, authorized: true, state: null, error: 'Could not read from Supabase database: ' + (error.message || JSON.stringify(error)) });
           return;
         }
 
