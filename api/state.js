@@ -134,7 +134,17 @@ module.exports = async function handler(req, res) {
 
         if (error) {
           console.error('Supabase query error:', error);
-          res.status(500).json({ configured: true, authorized: true, state: null, error: 'Could not read from Supabase database: ' + (error.message || JSON.stringify(error)) });
+          const cause = error.cause ? (error.cause.message || error.cause.code || String(error.cause)) : null;
+          const currentUrl = cleanSupabaseUrl(process.env.SUPABASE_URL);
+          let targetHost = null;
+          try { targetHost = new URL(currentUrl).host; } catch (e) { targetHost = 'invalid-url: ' + currentUrl; }
+          res.status(500).json({
+            configured: true,
+            authorized: true,
+            state: null,
+            error: 'Could not read from Supabase database: ' + (error.message || JSON.stringify(error)) + (cause ? ' (Cause: ' + cause + ')' : ''),
+            targetHost: targetHost
+          });
           return;
         }
 
