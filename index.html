@@ -358,6 +358,50 @@
   }
   div.person-field textarea { resize: vertical; min-height: 44px; font-family: "Public Sans", sans-serif; }
 
+  /* ---------- Section Save Bars & Controls ---------- */
+  .btn-sm { font-size: 12px; padding: 6px 12px; border-radius: 8px; gap: 5px; }
+  .btn-xs { font-size: 11px; padding: 3px 8px; border-radius: 6px; gap: 4px; font-weight: 600; line-height: 1.2; }
+  .section-save-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-strong);
+    border-radius: 11px;
+    margin: 6px 0 10px;
+  }
+  .section-save-info { display: flex; flex-direction: column; gap: 3px; }
+  .section-save-title { font-size: 12.5px; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: 6px; }
+  .section-save-sub { font-size: 11px; color: var(--ink-muted); }
+  .person-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .person-section-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .card-save-btn {
+    border-color: var(--border-strong);
+    background: var(--surface);
+    color: var(--ink-secondary);
+  }
+  .card-save-btn:hover {
+    color: var(--ink);
+    background: var(--surface-2);
+    border-color: var(--accent);
+  }
+  .section-save-btn {
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+
   /* ---------- Logo / device-mark upload ---------- */
   .logo-field-row { display: flex; gap: 8px; align-items: center; }
   .field .logo-field-row input.logo-url-input { flex: 1 1 auto; width: auto; min-width: 0; }
@@ -2653,7 +2697,8 @@
   }
 
   function openAddModal() {
-    modalState = { mode: 'add', draft: blankDraft(), errors: {}, autoFilled: {}, parseNotice: null };
+    var d = blankDraft();
+    modalState = { mode: 'add', draft: d, errors: {}, autoFilled: {}, parseNotice: null, savedDraftJson: JSON.stringify(d) };
     renderModal();
   }
   function openEditModal(id) {
@@ -2668,7 +2713,8 @@
       draft: JSON.parse(JSON.stringify(r)),
       errors: {},
       autoFilled: {},
-      parseNotice: null
+      parseNotice: null,
+      savedDraftJson: JSON.stringify(r)
     };
     modalState.draft.newClientName = '';
     if (!modalState.draft.applicants) modalState.draft.applicants = [];
@@ -2748,15 +2794,36 @@
     modalState = { mode: 'export', scope: 'filtered', format: 'csv', columns: null, exportFallback: null };
     renderModal();
   }
-  function closeModal() {
+  function closeModal(force) {
+    if (!force && modalState && modalState.draft) {
+      syncModalDraftFromDom();
+      var d = modalState.draft;
+      var hasAnyContent = (d.brand && d.brand.trim()) || (d.appno && d.appno.trim()) ||
+        (d.applicants && d.applicants.length && d.applicants.some(function (a) { return a.name; })) ||
+        (d.authors && d.authors.length && d.authors.some(function (a) { return a.name; })) ||
+        (d.contributors && d.contributors.length && d.contributors.some(function (c) { return c.name; }));
+
+      if (hasAnyContent && modalState.savedDraftJson) {
+        var curNorm = JSON.stringify(cleanRecordForCompare(d));
+        var savedObj = JSON.parse(modalState.savedDraftJson);
+        var savedNorm = JSON.stringify(cleanRecordForCompare(savedObj));
+        if (curNorm !== savedNorm) {
+          if (!confirm('You have unsaved changes in this matter. Are you sure you want to close without saving?')) {
+            return;
+          }
+        }
+      }
+    }
     modalState = null;
     renderModal();
     renderAll();
   }
 
-  function renderModal() {
+  function renderModal(preserveScroll) {
     var root = document.getElementById('modal-root');
     if (!modalState) { root.innerHTML = ''; return; }
+    var modalBody = root.querySelector('.modal-body');
+    var prevScroll = modalBody ? modalBody.scrollTop : 0;
     if (modalState.mode === 'import') {
       root.innerHTML = renderImportModal();
     } else if (modalState.mode === 'export') {
@@ -2767,6 +2834,10 @@
       root.innerHTML = renderMiscFormModal();
     } else {
       root.innerHTML = renderFormModal();
+    }
+    if (preserveScroll && prevScroll > 0) {
+      var newBody = root.querySelector('.modal-body');
+      if (newBody) newBody.scrollTop = prevScroll;
     }
   }
 
@@ -2981,7 +3052,9 @@
     var dAttr = ' data-applicant-idx="' + idx + '"';
     var html = '<div class="person-card" data-applicant-idx="' + idx + '">';
     html += '<div class="person-card-head"><span class="person-card-title">Applicant ' + (idx + 1) + '</span>' +
-      '<button type="button" class="btn-ghost" data-action="remove-applicant" data-idx="' + idx + '" title="Remove">✕</button></div>';
+      '<div style="display:flex;align-items:center;gap:6px;">' +
+      '<button type="button" class="btn btn-secondary btn-xs card-save-btn" data-action="save-section-applicants" title="Save applicant details now"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg> Save</button>' +
+      '<button type="button" class="btn-ghost" data-action="remove-applicant" data-idx="' + idx + '" title="Remove">✕</button></div></div>';
     html += '<div class="person-field-grid">';
     html += personCardField('Name', '<input type="text" data-applicant-field="name"' + dAttr + ' value="' + escapeHtml(a.name || '') + '" placeholder="Applicant name">');
     var etHtml = '<select data-applicant-field="entityType"' + dAttr + '>';
@@ -3002,7 +3075,9 @@
     var dAttr = ' data-author-idx="' + idx + '"';
     var html = '<div class="person-card" data-author-idx="' + idx + '">';
     html += '<div class="person-card-head"><span class="person-card-title">Author ' + (idx + 1) + '</span>' +
-      '<button type="button" class="btn-ghost" data-action="remove-author" data-idx="' + idx + '" title="Remove">✕</button></div>';
+      '<div style="display:flex;align-items:center;gap:6px;">' +
+      '<button type="button" class="btn btn-secondary btn-xs card-save-btn" data-action="save-section-authors" title="Save author details now"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg> Save</button>' +
+      '<button type="button" class="btn-ghost" data-action="remove-author" data-idx="' + idx + '" title="Remove">✕</button></div></div>';
     html += '<div class="person-field-grid">';
     html += personCardField('Name', '<input type="text" data-author-field="name"' + dAttr + ' value="' + escapeHtml(a.name || '') + '" placeholder="Author full name">', 'span-2');
     html += personCardField('Email ID', '<input type="email" data-author-field="email"' + dAttr + ' value="' + escapeHtml(a.email || '') + '" placeholder="e.g. author@example.com">');
@@ -3020,7 +3095,9 @@
     var dAttr = ' data-contributor-idx="' + idx + '"';
     var html = '<div class="person-card" data-contributor-idx="' + idx + '">';
     html += '<div class="person-card-head"><span class="person-card-title">Contributor / Researcher ' + (idx + 1) + '</span>' +
-      '<button type="button" class="btn-ghost" data-action="remove-contributor" data-idx="' + idx + '" title="Remove">✕</button></div>';
+      '<div style="display:flex;align-items:center;gap:6px;">' +
+      '<button type="button" class="btn btn-secondary btn-xs card-save-btn" data-action="save-section-contributors" title="Save contributor details now"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg> Save</button>' +
+      '<button type="button" class="btn-ghost" data-action="remove-contributor" data-idx="' + idx + '" title="Remove">✕</button></div></div>';
     html += '<div class="person-field-grid">';
     html += personCardField('Contributor Name', '<input type="text" data-contributor-field="name"' + dAttr + ' value="' + escapeHtml(c.name || '') + '" placeholder="Contributor / Researcher name">', 'span-2');
     html += personCardField('Institution / Department', '<input type="text" data-contributor-field="institution"' + dAttr + ' value="' + escapeHtml(c.institution || '') + '" placeholder="e.g. School of Design / Department of Mechanical Engg">', 'span-2');
@@ -3256,43 +3333,87 @@
       html += '</div>';
     }
 
-    html += '<div class="field span-2"><label>Applicant(s) on record</label>';
+    // Section 1 Save Bar: Application & Statutory Details
+    html += '<div class="field span-2 section-save-bar">' +
+      '<div class="section-save-info">' +
+      '<span class="section-save-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Application &amp; Statutory Details</span>' +
+      '<span class="section-save-sub">Save core matter metadata, status, class &amp; statutory dates to dashboard</span></div>' +
+      '<button type="button" class="btn btn-secondary btn-sm section-save-btn" data-action="save-section-core">' +
+      '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Application Details</button>' +
+      '</div>';
+
+    // Section 2: Applicants on record
+    html += '<div class="field span-2">' +
+      '<div class="person-section-header">' +
+      '<div><label style="margin:0;font-size:12.5px;font-weight:700;">Applicant(s) on Record</label>' +
+      '<span class="hint" style="display:block;margin-top:2px;">Entity names, registered addresses &amp; authorised signatories</span></div>' +
+      '<button type="button" class="btn btn-secondary btn-sm section-save-btn" data-action="save-section-applicants">' +
+      '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Applicants</button>' +
+      '</div>';
     html += '<div class="person-cards">';
     (d.applicants || []).forEach(function (a, idx) {
       html += renderApplicantCard(a, idx);
     });
     html += '</div>';
-    html += '<button type="button" class="btn btn-secondary" style="margin-top:10px;" data-action="add-applicant">+ Add applicant</button>';
+    html += '<div class="person-section-actions">' +
+      '<button type="button" class="btn btn-secondary" data-action="add-applicant">+ Add applicant</button>' +
+      '<button type="button" class="btn btn-secondary btn-sm section-save-btn" data-action="save-section-applicants">' +
+      '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Applicants</button>' +
+      '</div>';
     html += '</div>';
 
+    // Section 3: Authors (if applicable)
     if (cfg.hasAuthors) {
-      html += '<div class="field span-2"><label>Author(s) <span class="hint">(individuals who created the work)</span></label>';
+      html += '<div class="field span-2">' +
+        '<div class="person-section-header">' +
+        '<div><label style="margin:0;font-size:12.5px;font-weight:700;">Author(s)</label>' +
+        '<span class="hint" style="display:block;margin-top:2px;">Individuals who created the work</span></div>' +
+        '<button type="button" class="btn btn-secondary btn-sm section-save-btn" data-action="save-section-authors">' +
+        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Authors</button>' +
+        '</div>';
       html += '<div class="person-cards">';
       (d.authors || []).forEach(function (a, idx) {
         html += renderAuthorCard(a, idx);
       });
       html += '</div>';
-      html += '<button type="button" class="btn btn-secondary" style="margin-top:10px;" data-action="add-author">+ Add Author</button>';
+      html += '<div class="person-section-actions">' +
+        '<button type="button" class="btn btn-secondary" data-action="add-author">+ Add Author</button>' +
+        '<button type="button" class="btn btn-secondary btn-sm section-save-btn" data-action="save-section-authors">' +
+        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Authors</button>' +
+        '</div>';
       html += '</div>';
     }
 
+    // Section 4: Contributors (if applicable)
     if (cfg.hasContributors) {
-      html += '<div class="field span-2"><label>Internal Contributors / Researchers <span class="hint">(faculty, employees, or researchers who contributed to the design)</span></label>';
+      html += '<div class="field span-2">' +
+        '<div class="person-section-header">' +
+        '<div><label style="margin:0;font-size:12.5px;font-weight:700;">Internal Contributors / Researchers</label>' +
+        '<span class="hint" style="display:block;margin-top:2px;">Faculty, employees, or researchers who contributed to the design</span></div>' +
+        '<button type="button" class="btn btn-secondary btn-sm section-save-btn" data-action="save-section-contributors">' +
+        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Contributors</button>' +
+        '</div>';
       html += '<div class="person-cards">';
       (d.contributors || []).forEach(function (c, idx) {
         html += renderContributorCard(c, idx);
       });
       html += '</div>';
-      html += '<button type="button" class="btn btn-secondary" style="margin-top:10px;" data-action="add-contributor">+ Add Contributor</button>';
+      html += '<div class="person-section-actions">' +
+        '<button type="button" class="btn btn-secondary" data-action="add-contributor">+ Add Contributor</button>' +
+        '<button type="button" class="btn btn-secondary btn-sm section-save-btn" data-action="save-section-contributors">' +
+        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Contributors</button>' +
+        '</div>';
       html += '</div>';
     }
 
     html += '</div></div>';
 
     html += '<div class="modal-footer">';
-    html += isEdit ? '<button class="btn btn-danger" data-action="delete-record">Delete</button>' : '<span></span>';
-    html += '<div class="right-actions"><button class="btn btn-secondary" data-action="close-modal">Cancel</button>' +
-      '<button class="btn btn-primary" data-action="save-record">' + (isEdit ? 'Save changes' : 'Add to ledger') + '</button></div>';
+    html += isEdit ? '<button type="button" class="btn btn-danger" data-action="delete-record">Delete</button>' : '<span></span>';
+    html += '<div class="right-actions">' +
+      '<button type="button" class="btn btn-secondary" data-action="save-all-keep-open" title="Save all matter details to dashboard">' +
+      '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save All</button>' +
+      '<button type="button" class="btn btn-primary" data-action="close-modal">Close</button></div>';
     html += '</div></div></div>';
     return html;
   }
@@ -3504,6 +3625,92 @@
     }
   }
 
+  function syncModalDraftFromDom() {
+    if (!modalState || !modalState.draft) return;
+    var root = document.getElementById('modal-root');
+    if (!root) return;
+    var d = modalState.draft;
+
+    var fields = root.querySelectorAll('[data-field]');
+    for (var i = 0; i < fields.length; i++) {
+      var el = fields[i];
+      var fld = el.getAttribute('data-field');
+      if (fld === 'stageEffectiveDate' || fld === 'stageDeadline' || fld === 'stageRemarks') {
+        modalState[fld] = el.value;
+      } else {
+        d[fld] = (el.type === 'checkbox') ? el.checked : el.value;
+      }
+    }
+
+    var appCards = root.querySelectorAll('.person-card[data-applicant-idx]');
+    d.applicants = d.applicants || [];
+    for (var a = 0; a < appCards.length; a++) {
+      var card = appCards[a];
+      var aIdx = parseInt(card.getAttribute('data-applicant-idx'), 10);
+      if (!d.applicants[aIdx]) d.applicants[aIdx] = {};
+      var aInputs = card.querySelectorAll('[data-applicant-field]');
+      for (var ai = 0; ai < aInputs.length; ai++) {
+        var aEl = aInputs[ai];
+        var aKey = aEl.getAttribute('data-applicant-field');
+        d.applicants[aIdx][aKey] = aEl.value;
+      }
+    }
+
+    var authCards = root.querySelectorAll('.person-card[data-author-idx]');
+    d.authors = d.authors || [];
+    for (var u = 0; u < authCards.length; u++) {
+      var uCard = authCards[u];
+      var uIdx = parseInt(uCard.getAttribute('data-author-idx'), 10);
+      if (!d.authors[uIdx]) d.authors[uIdx] = {};
+      var uInputs = uCard.querySelectorAll('[data-author-field]');
+      for (var ui = 0; ui < uInputs.length; ui++) {
+        var uEl = uInputs[ui];
+        var uKey = uEl.getAttribute('data-author-field');
+        d.authors[uIdx][uKey] = uEl.value;
+      }
+    }
+
+    var cCards = root.querySelectorAll('.person-card[data-contributor-idx]');
+    d.contributors = d.contributors || [];
+    for (var c = 0; c < cCards.length; c++) {
+      var cCard = cCards[c];
+      var cIdx = parseInt(cCard.getAttribute('data-contributor-idx'), 10);
+      if (!d.contributors[cIdx]) d.contributors[cIdx] = {};
+      var cInputs = cCard.querySelectorAll('[data-contributor-field]');
+      for (var ci = 0; ci < cInputs.length; ci++) {
+        var cEl = cInputs[ci];
+        var cKey = cEl.getAttribute('data-contributor-field');
+        d.contributors[cIdx][cKey] = cEl.value;
+      }
+    }
+  }
+
+  function cleanRecordForCompare(d) {
+    if (!d) return {};
+    return {
+      clientId: d.clientId || '',
+      code: (d.code || '').trim(),
+      brand: (d.brand || '').trim(),
+      cls: (d.cls || '').toString().trim(),
+      appno: (d.appno || '').toString().trim(),
+      markType: d.markType || '',
+      status: d.status || '',
+      desc: (d.desc || '').trim(),
+      action: (d.action || '').trim(),
+      actionDate: d.actionDate || '',
+      filingDate: (d.filingDate || '').trim(),
+      priorityDate: (d.priorityDate || '').trim(),
+      registrationDate: (d.registrationDate || '').trim(),
+      lastRenewalDate: (d.lastRenewalDate || '').trim(),
+      designExtended: !!d.designExtended,
+      renewDate: d.renewDate || '',
+      logoUrl: (d.logoUrl || '').trim(),
+      applicants: cleanApplicants(d.applicants),
+      authors: cleanAuthors(d.authors),
+      contributors: cleanContributors(d.contributors)
+    };
+  }
+
   function validateDraft(d) {
     var cfg = ipConfig(d.ipType || view.ipType);
     var errors = {};
@@ -3554,20 +3761,41 @@
     }).filter(function (c) { return c.name || c.institution || c.affiliation; });
   }
 
-  function saveRecord() {
+  function saveMatter(opts) {
+    opts = opts || {};
+    var section = opts.section || 'all';
+    var keepOpen = opts.keepOpen !== false;
+    if (!modalState || !modalState.draft) return;
+
+    syncModalDraftFromDom();
     var d = modalState.draft;
-    var errors = validateDraft(d);
-    modalState.errors = errors;
-    if (Object.keys(errors).length) { renderModal(); return; }
+    var cfg = ipConfig(d.ipType || view.ipType);
+
+    // Minimum validation for the matter:
+    // Required whenever saving core details, saving all, or creating a new record for the first time
+    var errors = {};
+    if (section === 'core' || section === 'all' || modalState.mode === 'add') {
+      errors = validateDraft(d);
+      modalState.errors = errors;
+      if (Object.keys(errors).length) {
+        renderModal(true);
+        if (errors.brand) toast('Please enter ' + cfg.brandLabel.toLowerCase() + ' before saving.');
+        else if (errors.appno) toast('Please enter ' + cfg.appnoLabel.toLowerCase() + ' before saving.');
+        else if (errors.newClientName) toast('Please enter the new client name before saving.');
+        return;
+      }
+    }
+    modalState.errors = {};
 
     var newState = JSON.parse(JSON.stringify(state));
     var clientId = d.clientId;
     var clientName = null;
     if (clientId === '__new__') {
       clientId = nextClientId(newState);
-      clientName = d.newClientName.trim();
+      clientName = (d.newClientName || '').trim() || 'New Client';
       newState.clients.push({ id: clientId, name: clientName });
       newState.nextClientSeq = (newState.nextClientSeq || newState.clients.length + 1) + 1;
+      d.clientId = clientId;
     } else {
       var cl = clientById(clientId);
       clientName = cl ? cl.name : clientId;
@@ -3580,7 +3808,7 @@
       clientId: clientId,
       ipType: d.ipType || view.ipType,
       code: (d.code || '').trim(),
-      brand: d.brand.trim(),
+      brand: (d.brand || '').trim(),
       cls: (d.cls || '').toString().trim(),
       appno: (d.appno || '').toString().trim(),
       markType: d.markType,
@@ -3606,6 +3834,7 @@
     if (renCalc && renCalc.nextRenewalDate) {
       if (!d.renewDate || (existingRecord && d.renewDate === existingRecord.renewDate)) {
         record.renewDate = renCalc.nextRenewalDate;
+        d.renewDate = renCalc.nextRenewalDate;
       }
     }
 
@@ -3630,12 +3859,13 @@
       if (modalState && modalState.stageRemarks && modalState.stageRemarks.trim() && !record.action) {
         record.action = modalState.stageRemarks.trim();
       }
+      modalState.initialStatus = record.status;
     }
 
     if (isEdit) {
       var foundIdx = -1;
       for (var i = 0; i < newState.records.length; i++) {
-        if (newState.records[i].id === record.id) {
+        if (String(newState.records[i].id) === String(record.id)) {
           foundIdx = i;
           break;
         }
@@ -3645,15 +3875,46 @@
       } else {
         newState.records.push(record);
       }
-      pushLog(newState, 'Edited ' + record.brand + ' (' + record.appno + ') — ' + clientName);
     } else {
       newState.records.push(record);
       newState.nextRecordSeq = (newState.nextRecordSeq || state.records.length + 1) + 1;
-      pushLog(newState, 'Added ' + record.brand + ' (' + record.appno + ') — ' + clientName);
     }
+
     view.clientId = clientId;
-    closeModal();
-    persist(newState, isEdit ? 'Changes saved' : 'Added to ledger');
+    modalState.draft.id = record.id;
+    modalState.mode = 'edit';
+    modalState.savedDraftJson = JSON.stringify(record);
+
+    var toastMsg = 'Changes saved to dashboard.';
+    if (section === 'core') {
+      pushLog(newState, 'Saved application details for ' + record.brand + ' (' + record.appno + ') — ' + clientName);
+      toastMsg = '✓ Application details saved to dashboard.';
+    } else if (section === 'applicants') {
+      pushLog(newState, 'Saved ' + record.applicants.length + ' applicant(s) for ' + record.brand + ' (' + record.appno + ') — ' + clientName);
+      toastMsg = '✓ ' + (record.applicants.length ? record.applicants.length + ' applicant(s)' : 'Applicants') + ' saved to dashboard.';
+    } else if (section === 'authors') {
+      pushLog(newState, 'Saved ' + record.authors.length + ' author(s) for ' + record.brand + ' (' + record.appno + ') — ' + clientName);
+      toastMsg = '✓ ' + (record.authors.length ? record.authors.length + ' author(s)' : 'Authors') + ' saved to dashboard.';
+    } else if (section === 'contributors') {
+      pushLog(newState, 'Saved ' + record.contributors.length + ' contributor(s) for ' + record.brand + ' (' + record.appno + ') — ' + clientName);
+      toastMsg = '✓ ' + (record.contributors.length ? record.contributors.length + ' contributor(s)' : 'Contributors') + ' saved to dashboard.';
+    } else {
+      pushLog(newState, (isEdit ? 'Edited ' : 'Added ') + record.brand + ' (' + record.appno + ') — ' + clientName);
+      toastMsg = isEdit ? '✓ All changes saved to dashboard.' : '✓ Matter added to dashboard.';
+    }
+
+    persist(newState, toastMsg);
+
+    if (keepOpen) {
+      renderModal(true);
+      toast(toastMsg);
+    } else {
+      closeModal(true);
+    }
+  }
+
+  function saveRecord() {
+    saveMatter({ section: 'all', keepOpen: true });
   }
 
   function deleteRecordConfirmed(id) {
@@ -4831,7 +5092,25 @@
           if (e.target === el) closeModal();
           break;
         case 'save-record':
-          saveRecord();
+        case 'save-all-keep-open':
+          e.stopPropagation();
+          saveMatter({ section: 'all', keepOpen: true });
+          break;
+        case 'save-section-core':
+          e.stopPropagation();
+          saveMatter({ section: 'core', keepOpen: true });
+          break;
+        case 'save-section-applicants':
+          e.stopPropagation();
+          saveMatter({ section: 'applicants', keepOpen: true });
+          break;
+        case 'save-section-authors':
+          e.stopPropagation();
+          saveMatter({ section: 'authors', keepOpen: true });
+          break;
+        case 'save-section-contributors':
+          e.stopPropagation();
+          saveMatter({ section: 'contributors', keepOpen: true });
           break;
         case 'commit-stage-transition':
           commitStageTransition();
@@ -4858,39 +5137,45 @@
           break;
         case 'add-applicant':
           e.stopPropagation();
+          syncModalDraftFromDom();
           modalState.draft.applicants = modalState.draft.applicants || [];
           modalState.draft.applicants.push({ name: '', entityType: 'Individual', authorizedPerson: '', email: '', phone: '' });
-          renderModal();
+          renderModal(true);
           break;
         case 'remove-applicant':
           e.stopPropagation();
+          syncModalDraftFromDom();
           var rmIdx = parseInt(el.getAttribute('data-idx'), 10);
           modalState.draft.applicants.splice(rmIdx, 1);
-          renderModal();
+          renderModal(true);
           break;
         case 'add-author':
           e.stopPropagation();
+          syncModalDraftFromDom();
           modalState.draft.authors = modalState.draft.authors || [];
           modalState.draft.authors.push({ name: '', institution: '', address: '', nationality: '', countryOfResidence: '', gender: '', email: '', phone: '' });
-          renderModal();
+          renderModal(true);
           break;
         case 'remove-author':
           e.stopPropagation();
+          syncModalDraftFromDom();
           var rmAuthorIdx = parseInt(el.getAttribute('data-idx'), 10);
           modalState.draft.authors.splice(rmAuthorIdx, 1);
-          renderModal();
+          renderModal(true);
           break;
         case 'add-contributor':
           e.stopPropagation();
+          syncModalDraftFromDom();
           modalState.draft.contributors = modalState.draft.contributors || [];
           modalState.draft.contributors.push({ name: '', institution: '', affiliation: '' });
-          renderModal();
+          renderModal(true);
           break;
         case 'remove-contributor':
           e.stopPropagation();
+          syncModalDraftFromDom();
           var rmContribIdx = parseInt(el.getAttribute('data-idx'), 10);
           modalState.draft.contributors.splice(rmContribIdx, 1);
-          renderModal();
+          renderModal(true);
           break;
         case 'dashboard-goto':
           view.ipType = el.getAttribute('data-iptype');
