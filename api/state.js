@@ -97,6 +97,76 @@ function isAuthorized(req) {
   return cleanProvided === required;
 }
 
+async function syncIpLedgerToCore(supabase, state) {
+  if (!state || !Array.isArray(state.records)) return;
+  try {
+    const stateClients = state.clients || [];
+    if (stateClients.length > 0) {
+      const { data: existingClients } = await supabase.schema('core').from('clients').select('client_name');
+      const existingNames = new Set((existingClients || []).map((c) => (c.client_name || '').trim().toLowerCase()));
+      const newClients = stateClients
+        .filter((sc) => sc.name && !existingNames.has(sc.name.trim().toLowerCase()))
+        .map((sc) => ({
+          client_name: sc.name.trim(),
+          client_code: sc.name.trim().slice(0, 6).toUpperCase().replace(/[^A-Z0-9]/g, '') || 'CLNT',
+          entity_type: 'OTHER',
+        }));
+      if (newClients.length > 0) {
+        await supabase.schema('core').from('clients').insert(newClients);
+      }
+    }
+
+    const { data: coreClients } = await supabase.schema('core').from('clients').select('id, client_name');
+    const clientMap = new Map();
+    (coreClients || []).forEach((c) => clientMap.set((c.client_name || '').trim().toLowerCase(), c.id));
+    const stateClientIdToCoreId = new Map();
+    stateClients.forEach((sc) => {
+      const cId = clientMap.get((sc.name || '').trim().toLowerCase());
+      if (cId) stateClientIdToCoreId.set(sc.id, cId);
+    });
+
+    const defaultClientId = clientMap.get('independent applicants') || (coreClients && coreClients[0]?.id);
+
+    for (const r of state.records) {
+      let rawCode = (r.code || '').trim();
+      if (!rawCode) continue;
+      if (rawCode.toUpperCase() === 'LT09') rawCode = 'TM-LT09';
+
+      const clientId = stateClientIdToCoreId.get(r.clientId) || defaultClientId;
+      if (!clientId) continue;
+
+      let status = 'ACTIVE';
+      const s = (r.status || '').toLowerCase();
+      if (s.includes('registered') || s.includes('granted')) status = 'COMPLETED';
+      else if (s.includes('abandon') || s.includes('refused') || s.includes('withdraw')) status = 'ABANDONED';
+
+      const title = r.brand || (r.desc ? r.desc.slice(0, 80) : '') || ((r.ipType || 'IP').toUpperCase() + ' ' + rawCode);
+
+      const { data: existing } = await supabase
+        .schema('core')
+        .from('project_codes')
+        .select('id, status')
+        .eq('code', rawCode)
+        .maybeSingle();
+
+      if (!existing) {
+        await supabase.schema('core').from('project_codes').insert({
+          code: rawCode,
+          department: 'IP_SOFT',
+          client_id: clientId,
+          title: title,
+          status: status,
+          owning_app: 'IP_LEDGER',
+        });
+      } else if (existing.status !== status) {
+        await supabase.schema('core').from('project_codes').update({ status, title }).eq('id', existing.id);
+      }
+    }
+  } catch (err) {
+    console.warn('Background syncIpLedgerToCore warning:', err?.message || err);
+  }
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET' && req.method !== 'PUT') {
     res.status(405).json({ error: 'Method not allowed. Use GET or PUT.' });
@@ -197,6 +267,9 @@ module.exports = async function handler(req, res) {
         res.status(500).json({ error: 'Could not save to Supabase: ' + (error.message || 'unknown error') });
         return;
       }
+
+      // Ecosystem Interlinking: Asynchronously sync clients and matters to core.clients and core.project_codes
+      syncIpLedgerToCore(supabase, body).catch((e) => console.warn('syncIpLedgerToCore error:', e));
 
       res.status(200).json({ ok: true });
       return;
