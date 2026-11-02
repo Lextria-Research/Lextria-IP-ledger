@@ -1702,6 +1702,14 @@
           password: cleanPass
         });
         if (!res.error && res.data && res.data.user) {
+          var uMeta = res.data.user.user_metadata || {};
+          var isSuper = uMeta.role === 'SUPER_ADMIN';
+          var da = uMeta.dashboard_access || {};
+          var ipAccess = da.soft_ip || da.ip_ledger || {};
+          if (!isSuper && ipAccess.enabled === false) {
+            renderGate('Access to Soft IP Ledger is not enabled for your universal account. Contact an Administrator.');
+            return;
+          }
           authUser = res.data.user;
           accessToken = res.data.session ? res.data.session.access_token : '';
         }
