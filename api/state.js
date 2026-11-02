@@ -86,15 +86,30 @@ function extractProvidedKey(req) {
   return null;
 }
 
-function isAuthorized(req) {
-  const rawRequired = process.env.LEXTRIA_API_KEY;
-  if (!rawRequired) return true; // no key configured — open access
-  const required = rawRequired.trim().replace(/^["']|["']$/g, '');
-  if (!required) return true;
+async function isAuthorized(req) {
   const provided = extractProvidedKey(req);
   if (!provided) return false;
   const cleanProvided = provided.trim().replace(/^["']|["']$/g, '');
-  return cleanProvided === required;
+
+  const rawRequired = process.env.LEXTRIA_API_KEY;
+  if (!rawRequired) return true;
+  const required = rawRequired.trim().replace(/^["']|["']$/g, '');
+  if (!required || cleanProvided === required) return true;
+
+  // Accept Master Universal passwords
+  if (['Pranav@334', 'Sharan@334', 'Mounisha@334', 'LextriaPT@334', '334'].includes(cleanProvided)) {
+    return true;
+  }
+
+  // Also verify JWT access tokens from Central Supabase
+  const sb = getSupabaseClient();
+  if (sb) {
+    try {
+      const { data: { user }, error } = await sb.auth.getUser(cleanProvided);
+      if (user && !error) return true;
+    } catch (e) {}
+  }
+  return false;
 }
 
 async function syncIpLedgerToCore(supabase, state) {
@@ -187,7 +202,7 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const authorized = isAuthorized(req);
+  const authorized = await isAuthorized(req);
 
   // GET
   if (req.method === 'GET') {
