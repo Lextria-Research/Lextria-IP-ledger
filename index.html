@@ -631,6 +631,9 @@
   var STATUS_DEFS = [
     { key: 'filed', label: 'Filed', tier: 'neutral', type: 'trademark', suggestedAction: 'Await formalities check', slaDays: null },
     { key: 'formalities_pass', label: 'Formalities Chk Pass', tier: 'neutral', type: 'trademark', suggestedAction: 'Await examination', slaDays: null },
+    { key: 'formalities_fail', label: 'Formalities Check Failed', tier: 'warning', type: 'trademark', suggestedAction: 'File response / rectify formalities check failure', slaDays: 30 },
+    { key: 'ready_for_examination', label: 'Ready for Examination', tier: 'neutral', type: 'trademark', suggestedAction: 'Application queued for examination by Trade Marks Registry', slaDays: null },
+    { key: 'under_examination', label: 'Under Examination', tier: 'info', type: 'trademark', suggestedAction: 'Application under examination by examiner', slaDays: null },
     { key: 'objected', label: 'Objected', tier: 'warning', type: 'trademark', suggestedAction: 'File response to Examination Report', slaDays: 30 },
     { key: 'response_filed', label: 'Response Filed', tier: 'info', type: 'trademark', suggestedAction: 'Awaiting hearing notice or acceptance', slaDays: null },
     { key: 'hearing_fixed', label: 'Hearing Fixed', tier: 'warning', type: 'trademark', suggestedAction: 'Prepare and attend hearing; file written submission promptly if directed', slaDays: null },
@@ -2805,11 +2808,34 @@
   /* ===================== Modal: add/edit/import/misc ===================== */
   function blankDraft() {
     var cfg = ipConfig(view.ipType);
-    return { id: null, clientId: view.clientId === '__all__' ? ((state.clients[0] && state.clients[0].id) || null) : view.clientId,
-      ipType: view.ipType, code: '', brand: '', cls: cfg.clsMode === 'select' ? (cfg.clsOptions[0] || '') : '', appno: '',
-      markType: cfg.markTypeMode === 'select' ? MARK_TYPES[0] : '', status: statusDefsForType(view.ipType)[0].key, desc: '', action: '',
-      actionDate: '', renewDate: '', filingDate: '', priorityDate: '', registrationDate: '', lastRenewalDate: '', designExtended: false,
-      newClientName: '', applicants: [], authors: [], contributors: [], logoUrl: '', timeline: [], miscFilings: [] };
+    var defClientId = (state.clients && state.clients.length > 0) ? state.clients[0].id : null;
+    return {
+      id: null,
+      clientId: (!view.clientId || view.clientId === '__all__') ? defClientId : view.clientId,
+      ipType: view.ipType,
+      code: '',
+      brand: '',
+      cls: cfg.clsMode === 'select' ? ((cfg.clsOptions && cfg.clsOptions[0]) || '') : '',
+      appno: '',
+      markType: cfg.markTypeMode === 'select' ? ((cfg.markTypeOptions && cfg.markTypeOptions[0]) || '') : '',
+      status: statusDefsForType(view.ipType)[0].key,
+      desc: '',
+      action: '',
+      actionDate: '',
+      renewDate: '',
+      filingDate: '',
+      priorityDate: '',
+      registrationDate: '',
+      lastRenewalDate: '',
+      designExtended: false,
+      newClientName: '',
+      applicants: [],
+      authors: [],
+      contributors: [],
+      logoUrl: '',
+      timeline: [],
+      miscFilings: []
+    };
   }
 
   function openAddModal() {
@@ -3344,7 +3370,8 @@
         (modalState.errors.newClientName ? '<div class="error-msg">' + modalState.errors.newClientName + '</div>' : '') + '</div>';
     }
 
-    html += '<div class="' + fieldClass('brand') + '"><label>' + escapeHtml(cfg.brandLabel) + '</label><input type="text" data-field="brand" value="' + escapeHtml(d.brand) + '">' +
+    var brandPh = (d.ipType === 'copyright' || view.ipType === 'copyright') ? 'Enter title of literary / artistic / software work' : (cfg.brandLabel || '');
+    html += '<div class="' + fieldClass('brand') + '"><label>' + escapeHtml(cfg.brandLabel) + '</label><input type="text" data-field="brand" value="' + escapeHtml(d.brand) + '" placeholder="' + escapeHtml(brandPh) + '">' +
       (modalState.errors.brand ? '<div class="error-msg">' + modalState.errors.brand + '</div>' : '') + '</div>';
 
     if (cfg.markTypeMode === 'select') {
@@ -3362,7 +3389,8 @@
     } else {
       html += '<div class="' + fieldClass('cls') + '"><label>' + escapeHtml(cfg.clsLabel) + '</label><input type="text" data-field="cls" value="' + escapeHtml(d.cls) + '" placeholder="' + escapeHtml(cfg.clsPlaceholder || '') + '"></div>';
     }
-    html += '<div class="' + fieldClass('appno') + '"><label>' + escapeHtml(cfg.appnoLabel) + '</label><input type="text" data-field="appno" value="' + escapeHtml(d.appno) + '">' +
+    var appnoPh = (d.ipType === 'copyright' || view.ipType === 'copyright') ? 'e.g. 4505/2024-CO/L (or leave blank if not yet filed)' : (cfg.appnoLabel + ' (or leave blank if pending)');
+    html += '<div class="' + fieldClass('appno') + '"><label>' + escapeHtml(cfg.appnoLabel) + '</label><input type="text" data-field="appno" value="' + escapeHtml(d.appno) + '" placeholder="' + escapeHtml(appnoPh) + '">' +
       (modalState.errors.appno ? '<div class="error-msg">' + modalState.errors.appno + '</div>' : '') + '</div>';
 
     html += '<div class="' + fieldClass('status') + ' span-2"><label>Status</label><select data-field="status">';
@@ -3527,9 +3555,11 @@
     html += '<div class="modal-footer">';
     html += isEdit ? '<button type="button" class="btn btn-danger" data-action="delete-record">Delete</button>' : '<span></span>';
     html += '<div class="right-actions">' +
-      '<button type="button" class="btn btn-secondary" data-action="save-all-keep-open" title="Save all matter details to dashboard">' +
-      '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save All</button>' +
-      '<button type="button" class="btn btn-primary" data-action="close-modal">Close</button></div>';
+      '<button type="button" class="btn btn-ghost" data-action="close-modal">Cancel</button>' +
+      '<button type="button" class="btn btn-secondary" data-action="save-all-keep-open" title="Save matter details and keep form open">' +
+      '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save (Keep Open)</button>' +
+      '<button type="button" class="btn btn-primary" data-action="save-record-close" title="Save matter details and return to ledger">' +
+      '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> ' + (isEdit ? 'Save &amp; Close' : 'Add &amp; Close') + '</button></div>';
     html += '</div></div></div>';
     return html;
   }
@@ -3831,7 +3861,10 @@
     var cfg = ipConfig(d.ipType || view.ipType);
     var errors = {};
     if (!d.brand || !d.brand.trim()) errors.brand = 'Enter a value for ' + cfg.brandLabel.toLowerCase() + '.';
-    if (!d.appno || !d.appno.trim()) errors.appno = 'Enter ' + cfg.appnoLabel.toLowerCase() + ' (or "Not yet filed").';
+    if (!d.appno || !d.appno.trim()) {
+      // Auto-default to 'Not yet filed' so new matters can be logged at inception without blocking
+      d.appno = 'Not yet filed';
+    }
     if (d.clientId === '__new__' && (!d.newClientName || !d.newClientName.trim())) errors.newClientName = 'Enter the new client\'s name.';
     return errors;
   }
@@ -3913,6 +3946,10 @@
       newState.nextClientSeq = (newState.nextClientSeq || newState.clients.length + 1) + 1;
       d.clientId = clientId;
     } else {
+      if (!clientId && state.clients && state.clients.length > 0) {
+        clientId = state.clients[0].id;
+        d.clientId = clientId;
+      }
       var cl = clientById(clientId);
       clientName = cl ? cl.name : clientId;
     }
@@ -5208,6 +5245,10 @@
           if (e.target === el) closeModal();
           break;
         case 'save-record':
+        case 'save-record-close':
+          e.stopPropagation();
+          saveMatter({ section: 'all', keepOpen: false });
+          break;
         case 'save-all-keep-open':
           e.stopPropagation();
           saveMatter({ section: 'all', keepOpen: true });
