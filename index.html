@@ -2642,11 +2642,11 @@
       }
       html += '</div>'; // end left column
 
-      // Right Column: Miscellaneous Filings & Amendments Panel
+      // Right Column: Statutory Forms & Petitions Panel
       html += '<div class="misc-panel">';
       html += '<div class="misc-panel-head">' +
         '<div class="misc-panel-title">' +
-        '<span>Miscellaneous &amp; Statutory Forms</span>' +
+        '<span>Statutory Forms &amp; Petitions</span>' +
         '<span class="misc-count-badge">' + miscCount + '</span>' +
         '</div>' +
         '<button type="button" class="btn btn-secondary btn-sm" data-action="open-misc-form" data-record-id="' + r.id + '">+ Log Statutory Form</button>' +
@@ -2655,7 +2655,7 @@
       if (!miscCount) {
         html += '<div class="misc-empty">' +
           '<div style="font-size:18px;margin-bottom:6px;">📋</div>' +
-          '<strong>No miscellaneous statutory forms logged.</strong><br>' +
+          '<strong>No statutory forms logged for this matter.</strong><br>' +
           'Track Form TM-M, TM-P, Form-30, Form-24, or incidental petitions here without disrupting primary milestone workflows.' +
           '<div style="margin-top:10px;"><button type="button" class="btn btn-secondary btn-sm" data-action="open-misc-form" data-record-id="' + r.id + '">+ Log First Form</button></div>' +
           '</div>';
@@ -3076,7 +3076,7 @@
       if (!miscFilings.length) {
         html += '<div class="misc-empty" style="padding:32px 16px;">' +
           '<div style="font-size:24px;margin-bottom:8px;">📋</div>' +
-          '<strong>No miscellaneous statutory forms logged for this matter.</strong><br>' +
+          '<strong>No statutory forms logged for this matter.</strong><br>' +
           'Track forms such as TM-M, TM-A, TM-O, Form-3, Form-4, or incidental petitions here with CBR numbers and official receipts.' +
           '<div style="margin-top:14px;"><button type="button" class="btn btn-secondary btn-sm" data-action="open-misc-form" data-record-id="' + r.id + '">+ Log First Statutory Form</button></div>' +
           '</div>';
@@ -3632,7 +3632,7 @@
     var isForm3 = (d.formNumber || '').toUpperCase().indexOf('FORM-3') !== -1;
 
     var html = '<div class="modal-overlay" data-action="overlay-close"><div class="modal" role="dialog" aria-modal="true" style="max-width:580px;">';
-    html += '<div class="modal-header"><div><h2>' + (isEdit ? 'Edit Statutory Form' : 'Log Miscellaneous Form') + '</h2>' +
+    html += '<div class="modal-header"><div><h2>' + (isEdit ? 'Edit Statutory Form' : 'Log Statutory Form') + '</h2>' +
       '<p style="margin:2px 0 0;font-size:12.5px;color:var(--ink-muted);"><strong style="color:var(--ink);">' + escapeHtml(r.brand) + '</strong> (' + escapeHtml(r.appno || 'No App #') + ')' + (client ? ' &middot; ' + escapeHtml(client.name) : '') + ' &bull; ' + escapeHtml(ipConfig(r.ipType).label) + '</p></div>' +
       '<button class="btn-ghost" data-action="close-modal" aria-label="Close">✕</button></div>';
 
@@ -3708,7 +3708,7 @@
     html += '<div class="modal-footer">' +
       '<button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button>' +
       '<div class="right-actions">' +
-      '<button type="button" class="btn btn-primary" data-action="save-misc-form">' + (isEdit ? 'Save Changes' : 'Log Form') + '</button>' +
+      '<button type="button" class="btn btn-primary" data-action="save-misc-form">' + (isEdit ? 'Save Changes' : 'Log Statutory Form') + '</button>' +
       '</div></div>';
 
     html += '</div></div>';
@@ -4083,7 +4083,7 @@
       if (isEdit && d.id) {
         html += '<div class="field span-2" style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:14px;">';
         html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">';
-        html += '<div style="font-size:12.5px;font-weight:700;color:var(--ink);">Miscellaneous Statutory Forms (' + ((d.miscFilings && d.miscFilings.length) || 0) + ')</div>';
+        html += '<div style="font-size:12.5px;font-weight:700;color:var(--ink);">Statutory Forms &amp; Petitions (' + ((d.miscFilings && d.miscFilings.length) || 0) + ')</div>';
         html += '<button type="button" class="btn btn-secondary btn-sm" data-action="open-misc-form" data-record-id="' + escapeHtml(d.id) + '">+ Log Statutory Form</button>';
         html += '</div>';
         if (d.miscFilings && d.miscFilings.length) {
@@ -4099,7 +4099,7 @@
           });
           html += '</div>';
         } else {
-          html += '<p style="margin:0;font-size:12px;color:var(--ink-muted);">No miscellaneous forms logged for this matter yet (e.g. TM-M, TM-P, Form-30, etc.). Click "+ Log Statutory Form" to add one.</p>';
+          html += '<p style="margin:0;font-size:12px;color:var(--ink-muted);">No statutory forms logged for this matter yet (e.g. TM-M, TM-P, Form-30, etc.). Click "+ Log Statutory Form" to add one.</p>';
         }
         html += '</div>';
       }
