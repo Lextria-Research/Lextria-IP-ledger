@@ -629,6 +629,7 @@
   // [4mo opposition window] -> registration, with a parallel opposition track
   // [2mo counter-statement]) so deadline suggestions match the real process.
   var STATUS_DEFS = [
+    { key: 'not_yet_filed', label: 'Not yet Filed', tier: 'neutral', type: 'trademark', suggestedAction: 'Prepare and file trademark application', slaDays: null },
     { key: 'filed', label: 'Filed', tier: 'neutral', type: 'trademark', suggestedAction: 'Await formalities check', slaDays: null },
     { key: 'formalities_pass', label: 'Formalities Chk Pass', tier: 'neutral', type: 'trademark', suggestedAction: 'Await examination', slaDays: null },
     { key: 'formalities_fail', label: 'Formalities Check Failed', tier: 'warning', type: 'trademark', suggestedAction: 'File response / rectify formalities check failure', slaDays: 30 },
@@ -647,6 +648,7 @@
     // (30d office turnaround) -> Formality Check -> (30d mandatory waiting period) -> Reply to Formality
     // Check -> (ASAP) -> Examination -> (30d) -> Discrepancy -> (ASAP) -> Reply -> (1d) -> Hearing ->
     // (ASAP) -> Hearing submission -> Registration. Doc notes ~3-6 months average end to end.
+    { key: 'cr_not_yet_filed', label: 'Not yet Filed', tier: 'neutral', type: 'copyright', suggestedAction: 'Prepare and file copyright application', slaDays: null },
     { key: 'cr_filed', label: 'Filed', tier: 'neutral', type: 'copyright', suggestedAction: 'Await formality check', slaDays: null },
     { key: 'cr_formality_check', label: 'Formality Check', tier: 'neutral', type: 'copyright', suggestedAction: 'Awaiting formality check outcome (approx. 30 days)', slaDays: 30 },
     { key: 'cr_formality_reply', label: 'Reply to Formality Check', tier: 'warning', type: 'copyright', suggestedAction: 'File reply to formality discrepancy; then a 30-day mandatory waiting period applies before examination', slaDays: 30 },
@@ -662,6 +664,7 @@
     // (ASAP) -> Issuing of FER -> (max 6 months) -> Filing FER Response -> (ASAP) -> Hearing ->
     // (max 6 months) -> Hearing Submission -> (ASAP) -> Grant, then publication in the official
     // journal with grant/certificate if no opposition is raised. Doc notes ~6 months average.
+    { key: 'id_not_yet_filed', label: 'Not yet Filed', tier: 'neutral', type: 'design', suggestedAction: 'Prepare representations and file design application', slaDays: null },
     { key: 'id_filed', label: 'Filed', tier: 'neutral', type: 'design', suggestedAction: 'Await First Examination Report (FER)', slaDays: null },
     { key: 'id_fer_issued', label: 'FER Issued', tier: 'warning', type: 'design', suggestedAction: 'File FER response (novelty/distinctiveness/classification objections)', slaDays: 180 },
     { key: 'id_fer_response_filed', label: 'FER Response Filed', tier: 'info', type: 'design', suggestedAction: 'Awaiting hearing notice or registration', slaDays: null },
@@ -4519,6 +4522,10 @@
   function matchStatusKey(label, ipType) {
     if (!label) return null;
     var norm = label.trim().toLowerCase();
+    if (norm === 'not filed' || norm === 'unfiled' || norm === 'draft' || norm === 'pending filing' || norm === 'not yet filed') {
+      var nyf = statusDefsForType(ipType).filter(function (s) { return s.key.indexOf('not_yet_filed') !== -1; })[0];
+      if (nyf) return nyf.key;
+    }
     var exact = null, partial = null;
     statusDefsForType(ipType).forEach(function (s) {
       if (s.label.toLowerCase() === norm) exact = s.key;
