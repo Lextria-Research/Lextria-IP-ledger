@@ -2870,8 +2870,8 @@
     var activeTab = view.drawerTab || 'overview';
     var viewMode = (view.timelineViews && view.timelineViews[r.id]) || 'dual';
 
-    var html = '<div class="slide-over-backdrop" data-action="close-drawer">';
-    html += '<div class="slide-over-drawer" onclick="event.stopPropagation()">';
+    var html = '<div class="slide-over-backdrop" data-action="drawer-backdrop-close">';
+    html += '<div class="slide-over-drawer">';
 
     // 1. Drawer Header
     html += '<div class="drawer-header">';
@@ -5686,10 +5686,46 @@
           view.deadlinesPage = 1;
           renderAll();
           break;
+        case 'drawer-backdrop-close':
+          if (e.target === el) {
+            view.expandedId = null;
+            renderAll();
+          }
+          break;
+        case 'close-drawer':
+          e.stopPropagation();
+          view.expandedId = null;
+          renderAll();
+          break;
+        case 'set-drawer-tab':
+          e.stopPropagation();
+          view.drawerTab = el.getAttribute('data-tab') || 'overview';
+          renderAll();
+          break;
+        case 'copy-dossier': {
+          e.stopPropagation();
+          var cdId = el.getAttribute('data-id');
+          var cdRec = recordById(cdId);
+          if (cdRec) copyDossier(cdRec);
+          break;
+        }
+        case 'copy-text': {
+          e.stopPropagation();
+          var cTxt = el.getAttribute('data-text');
+          if (cTxt) {
+            navigator.clipboard.writeText(cTxt).then(function () {
+              toast('Copied to clipboard: ' + cTxt);
+            }).catch(function () {
+              toast('Copied: ' + cTxt);
+            });
+          }
+          break;
+        }
         case 'toggle-expand':
-          if (e.target.closest('select') || e.target.closest('button')) return;
+          if (e.target.closest('select') || e.target.closest('button') || e.target.closest('a') || e.target.closest('input')) return;
           var id = el.getAttribute('data-id');
           view.expandedId = view.expandedId === id ? null : id;
+          if (view.expandedId && !view.drawerTab) view.drawerTab = 'overview';
           renderAll();
           break;
         case 'sort':
