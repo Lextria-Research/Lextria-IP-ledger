@@ -142,12 +142,30 @@ async function syncIpLedgerToCore(supabase, state) {
 
     const defaultClientId = clientMap.get('independent applicants') || (coreClients && coreClients[0]?.id);
 
+    const { data: existingCodesList } = await supabase
+      .schema('core')
+      .from('project_codes')
+      .select('id, code, code_normalized, status, client_id, title');
+
+    const existingMap = new Map();
+    (existingCodesList || []).forEach((e) => {
+      if (e.code) existingMap.set(e.code.trim().toUpperCase(), e);
+      if (e.code_normalized) existingMap.set(e.code_normalized.trim().toUpperCase(), e);
+    });
+
     for (const r of state.records) {
       let rawCode = (r.code || '').trim();
       if (!rawCode) continue;
       if (rawCode.toUpperCase() === 'LT09') rawCode = 'TM-LT09';
 
-      const clientId = stateClientIdToCoreId.get(r.clientId) || defaultClientId;
+      let clientId = stateClientIdToCoreId.get(r.clientId);
+      if (!clientId && r.applicants && Array.isArray(r.applicants) && r.applicants[0]?.name) {
+        clientId = clientMap.get(r.applicants[0].name.trim().toLowerCase());
+      }
+      if (!clientId && r.brand) {
+        clientId = clientMap.get(r.brand.trim().toLowerCase());
+      }
+      if (!clientId) clientId = defaultClientId;
       if (!clientId) continue;
 
       let status = 'ACTIVE';
@@ -155,26 +173,35 @@ async function syncIpLedgerToCore(supabase, state) {
       if (s.includes('registered') || s.includes('granted')) status = 'COMPLETED';
       else if (s.includes('abandon') || s.includes('refused') || s.includes('withdraw')) status = 'ABANDONED';
 
-      const title = r.brand || (r.desc ? r.desc.slice(0, 80) : '') || ((r.ipType || 'IP').toUpperCase() + ' ' + rawCode);
+      const brandPart = r.brand ? (r.cls ? `${r.brand} (Class ${r.cls})` : r.brand) : '';
+      const title = brandPart || (r.desc ? r.desc.slice(0, 80) : '') || ((r.ipType || 'IP').toUpperCase() + ' ' + rawCode);
 
-      const { data: existing } = await supabase
-        .schema('core')
-        .from('project_codes')
-        .select('id, status')
-        .eq('code', rawCode)
-        .maybeSingle();
+      const existing = existingMap.get(rawCode.toUpperCase());
 
       if (!existing) {
-        await supabase.schema('core').from('project_codes').insert({
-          code: rawCode,
-          department: 'IP_SOFT',
-          client_id: clientId,
-          title: title,
-          status: status,
-          owning_app: 'IP_LEDGER',
-        });
-      } else if (existing.status !== status) {
-        await supabase.schema('core').from('project_codes').update({ status, title }).eq('id', existing.id);
+        try {
+          const { data: inserted } = await supabase.schema('core').from('project_codes').insert({
+            code: rawCode,
+            department: 'IP_SOFT',
+            client_id: clientId,
+            title: title,
+            status: status,
+            owning_app: 'IP_LEDGER',
+          }).select('id, code, code_normalized, status, client_id, title').maybeSingle();
+          if (inserted) {
+            existingMap.set(rawCode.toUpperCase(), inserted);
+            if (inserted.code_normalized) existingMap.set(inserted.code_normalized.toUpperCase(), inserted);
+          }
+        } catch (_) {}
+      } else {
+        const needsUpdate = existing.status !== status || (existing.client_id !== clientId && clientId !== defaultClientId);
+        if (needsUpdate) {
+          try {
+            await supabase.schema('core').from('project_codes').update({ status, title, client_id: clientId }).eq('id', existing.id);
+            existing.status = status;
+            existing.client_id = clientId;
+          } catch (_) {}
+        }
       }
     }
   } catch (err) {
