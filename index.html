@@ -610,6 +610,242 @@
     border-radius: 9px; padding: 12px 14px; margin-top: 14px; }
   .form-linkage-label { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--ink); cursor: pointer; font-weight: 500; }
   .form-linkage-label input { width: 16px; height: 16px; accent-color: var(--accent); }
+
+  /* ---------- Slide-Over Drawer (Patent Dashboard Style) ---------- */
+  .slide-over-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 9, 20, 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 950;
+    display: flex;
+    justify-content: flex-end;
+    animation: drawerFadeIn 0.18s ease-out;
+  }
+  @keyframes drawerFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .slide-over-drawer {
+    width: 100%;
+    max-width: 740px;
+    height: 100vh;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    box-shadow: -16px 0 48px rgba(0, 0, 0, 0.45);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: drawerSlideIn 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    z-index: 951;
+  }
+  @keyframes drawerSlideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+  }
+  @media (max-width: 768px) {
+    .slide-over-drawer { max-width: 100%; }
+  }
+  .drawer-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .drawer-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .drawer-code-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .drawer-code-pill {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -0.2px;
+    color: var(--ink);
+    background: var(--surface-2);
+    padding: 4px 10px;
+    border-radius: 7px;
+    border: 1px solid var(--border-strong);
+  }
+  .drawer-iptype-pill {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: rgba(148, 139, 240, 0.15);
+    color: var(--accent);
+    border: 1px solid rgba(148, 139, 240, 0.3);
+  }
+  .drawer-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .drawer-title-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .drawer-brand-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--ink);
+    line-height: 1.25;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .drawer-brand-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    object-fit: contain;
+    background: #fff;
+    border: 1px solid var(--border);
+    padding: 2px;
+  }
+  .drawer-meta-pills {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--ink-secondary);
+  }
+  .drawer-meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--surface-2);
+    padding: 3px 9px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+  .drawer-tabs {
+    display: flex;
+    gap: 18px;
+    padding: 0 24px;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    flex-shrink: 0;
+  }
+  .drawer-tab-btn {
+    background: none;
+    border: none;
+    padding: 12px 2px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+  }
+  .drawer-tab-btn:hover {
+    color: var(--ink);
+  }
+  .drawer-tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: 800;
+  }
+  .drawer-tab-count {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10.5px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--ink-secondary);
+  }
+  .drawer-tab-btn.active .drawer-tab-count {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-color: var(--accent);
+  }
+  .drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .drawer-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .drawer-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .drawer-card-title {
+    margin: 0;
+    font-size: 12.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .detail-param-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    background: var(--surface-2);
+    padding: 8px 12px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+  }
+  .detail-param-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink-muted);
+  }
+  .detail-param-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  tbody tr.row.active-row {
+    background: var(--surface-2);
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+
 </style>
 
 <div class="app" id="app-root"></div>
@@ -1151,6 +1387,7 @@
     sortKey: 'brand',
     sortDir: 1,
     expandedId: null,
+    drawerTab: 'overview',
     deadlineClientFilter: '__all__',
     ledgerPage: 1,
     logPage: 1,
@@ -2006,6 +2243,18 @@
   }
 
   /* ===================== Rendering: shell ===================== */
+  
+  window.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      if (modalState) {
+        closeModal();
+      } else if (view.expandedId) {
+        view.expandedId = null;
+        renderAll();
+      }
+    }
+  });
+
   function renderAll() {
     document.getElementById('app-root').innerHTML = renderApp();
   }
@@ -2024,6 +2273,9 @@
     html += '<div class="view-panel' + (view.mode === 'settings' ? ' active' : '') + '" id="view-settings">' + renderSettingsView() + '</div>';
     html += '</main>';
     html += renderFooter();
+    if (view.expandedId) {
+      html += renderSlideOverDrawer(view.expandedId);
+    }
     return html;
   }
 
@@ -2541,6 +2793,389 @@
       html += '<option value="' + s.key + '"' + (s.key === r.status ? ' selected' : '') + '>' + s.label + '</option>';
     });
     html += '</select>';
+    return html;
+  }
+
+  
+  /* ===================== Slide-Over Drawer (Patent Dashboard Style) ===================== */
+  function copyDossier(r) {
+    if (!r) return;
+    var client = clientById(r.clientId);
+    var sd = statusDef(r.status);
+    var ren = calculateRenewalDetails(r);
+    var lines = [
+      '========================================',
+      'LEXTRIA IP DOSSIER: ' + (r.code || 'UNASSIGNED') + ' — ' + (r.brand || 'Untitled'),
+      '========================================',
+      'IP Type: ' + (r.ipType || '').toUpperCase(),
+      'Client: ' + (client ? client.name : 'Unknown'),
+      'Class: ' + (r.cls != null && r.cls !== '' ? r.cls : '—'),
+      'Statutory Application No: ' + (r.appno || 'Not yet filed'),
+      'Mark / Work Type: ' + (r.markType || '—'),
+      'Current Status: ' + (sd.label || r.status),
+      'Filing Date: ' + (fmtDate(r.filingDate) || '—'),
+      (r.priorityDate ? 'Priority Date: ' + fmtDate(r.priorityDate) : ''),
+      (r.registrationDate ? 'Registration Date: ' + fmtDate(r.registrationDate) : ''),
+      'Next Statutory Renewal: ' + (ren && ren.nextRenewalDate ? fmtDate(ren.nextRenewalDate) : (fmtDate(r.renewDate) || '—')),
+      'Next Step / Action: ' + (r.action || sd.suggestedAction || '—'),
+      (r.actionDate ? 'Action Deadline: ' + fmtDate(r.actionDate) : ''),
+      '',
+      'DESCRIPTION / GOODS & SERVICES:',
+      (r.desc || '—'),
+      '',
+      'APPLICANTS (' + ((r.applicants && r.applicants.length) || 0) + '):'
+    ];
+    if (r.applicants && r.applicants.length) {
+      r.applicants.forEach(function (a, idx) {
+        lines.push((idx + 1) + '. ' + (a.name || 'Unnamed') + ' (' + (a.entityType || a.type || 'Entity') + ')');
+        if (a.nationality) lines.push('   Nationality: ' + a.nationality + ' | Residence: ' + (a.countryOfResidence || a.country || 'India'));
+        if (a.address) lines.push('   Address: ' + a.address);
+        if (a.email || a.phone) lines.push('   Contact: ' + (a.email || '') + (a.phone ? ' | ' + a.phone : ''));
+      });
+    } else {
+      lines.push('No applicants listed on record.');
+    }
+    if (r.authors && r.authors.length) {
+      lines.push('');
+      lines.push('AUTHORS / CREATORS (' + r.authors.length + '):');
+      r.authors.forEach(function (a, idx) {
+        lines.push((idx + 1) + '. ' + (a.name || 'Unnamed') + (a.nationality ? ' (' + a.nationality + ')' : ''));
+      });
+    }
+    if (r.miscFilings && r.miscFilings.length) {
+      lines.push('');
+      lines.push('STATUTORY FORMS FILED (' + r.miscFilings.length + '):');
+      r.miscFilings.forEach(function (f, idx) {
+        lines.push((idx + 1) + '. ' + f.formNumber + ' [' + (f.status || 'Filed') + '] - Filed: ' + (fmtDate(f.filingDate) || '—') + (f.cbrNumber ? ' (CBR: ' + f.cbrNumber + ')' : '') + ' - ' + (f.purpose || ''));
+      });
+    }
+    lines.push('========================================');
+    var fullText = lines.filter(function (l) { return l !== undefined && l !== null; }).join('\n');
+    navigator.clipboard.writeText(fullText).then(function () {
+      toast('✓ Complete IP Dossier copied to clipboard!');
+    }).catch(function () {
+      toast('Dossier ready (clipboard permission needed)');
+    });
+  }
+
+  function renderSlideOverDrawer(recordId) {
+    var r = recordById(recordId);
+    if (!r) return '';
+    var cfg = ipConfig(r.ipType);
+    var sd = statusDef(r.status);
+    var client = clientById(r.clientId);
+    var ren = calculateRenewalDetails(r);
+    var timeline = (r && r.timeline && Array.isArray(r.timeline)) ? r.timeline : [];
+    var miscFilings = (r && r.miscFilings && Array.isArray(r.miscFilings)) ? r.miscFilings : [];
+    var activeTab = view.drawerTab || 'overview';
+    var viewMode = (view.timelineViews && view.timelineViews[r.id]) || 'dual';
+
+    var html = '<div class="slide-over-backdrop" data-action="close-drawer">';
+    html += '<div class="slide-over-drawer" onclick="event.stopPropagation()">';
+
+    // 1. Drawer Header
+    html += '<div class="drawer-header">';
+    html += '<div class="drawer-header-top">';
+    html += '<div class="drawer-code-group">';
+    html += '<span class="drawer-code-pill">' + (r.code ? escapeHtml(r.code) : '—') + '</span>';
+    if (r.code) {
+      html += '<button type="button" class="btn-ghost" data-action="copy-text" data-text="' + escapeHtml(r.code) + '" title="Copy Matter Code" style="padding:4px 6px;">' +
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>' +
+        '</button>';
+    }
+    html += '<span class="drawer-iptype-pill">' + escapeHtml((r.ipType || 'trademark').toUpperCase()) + '</span>';
+    html += renderStatusSelect(r);
+    html += '</div>';
+
+    html += '<div class="drawer-actions">';
+    html += '<button type="button" class="btn btn-secondary btn-sm" data-action="copy-dossier" data-id="' + r.id + '" title="Copy complete structured dossier" style="display:inline-flex;align-items:center;gap:6px;">' +
+      '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>' +
+      '<span>Copy Dossier</span></button>';
+    html += '<button type="button" class="btn btn-primary btn-sm" data-action="open-edit" data-id="' + r.id + '" title="Edit matter details" style="display:inline-flex;align-items:center;gap:6px;">' +
+      '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>' +
+      '<span>Edit</span></button>';
+    html += '<button type="button" class="btn-ghost" data-action="close-drawer" title="Close Drawer (Esc)" style="padding:6px;border-radius:6px;color:var(--ink-muted);">' +
+      '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+      '</button>';
+    html += '</div>'; // drawer-actions
+    html += '</div>'; // drawer-header-top
+
+    html += '<div class="drawer-title-row">';
+    html += '<h2 class="drawer-brand-title">' +
+      (cfg.hasLogo && r.logoUrl ? '<img class="drawer-brand-logo" src="' + escapeHtml(r.logoUrl) + '" alt="">' : '') +
+      '<span>' + escapeHtml(r.brand || 'Untitled Matter') + '</span></h2>';
+    html += '<div class="drawer-meta-pills">' +
+      '<span class="drawer-meta-pill" title="Client"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:2px;"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/></svg><strong>' + escapeHtml(client ? client.name : 'Unassigned Client') + '</strong></span>' +
+      '<span class="drawer-meta-pill"><strong>' + escapeHtml(cfg.clsLabel) + ':</strong> ' + escapeHtml(r.cls != null && r.cls !== '' ? r.cls : '—') + '</span>' +
+      '<span class="drawer-meta-pill"><strong>' + escapeHtml(cfg.appnoLabel) + ':</strong> <span class="mono">' + escapeHtml(r.appno || 'Not yet filed') + '</span></span>' +
+      (r.filingDate ? '<span class="drawer-meta-pill"><strong>Filing Date:</strong> ' + fmtDate(r.filingDate) + '</span>' : '') +
+      '</div>';
+    html += '</div>'; // drawer-title-row
+    html += '</div>'; // drawer-header
+
+    // 2. Tabs Strip
+    html += '<div class="drawer-tabs">';
+    html += '<button type="button" class="drawer-tab-btn' + (activeTab === 'overview' ? ' active' : '') + '" data-action="set-drawer-tab" data-tab="overview">' +
+      '<span>Overview</span></button>';
+    html += '<button type="button" class="drawer-tab-btn' + (activeTab === 'lifecycle' ? ' active' : '') + '" data-action="set-drawer-tab" data-tab="lifecycle">' +
+      '<span>Lifecycle &amp; Milestones</span>' +
+      '<span class="drawer-tab-count">' + timeline.length + '</span></button>';
+    html += '<button type="button" class="drawer-tab-btn' + (activeTab === 'forms' ? ' active' : '') + '" data-action="set-drawer-tab" data-tab="forms">' +
+      '<span>Statutory Forms</span>' +
+      '<span class="drawer-tab-count">' + miscFilings.length + '</span></button>';
+    html += '<button type="button" class="drawer-tab-btn' + (activeTab === 'renewal' ? ' active' : '') + '" data-action="set-drawer-tab" data-tab="renewal">' +
+      '<span>Renewal &amp; Deadlines</span>' +
+      (ren && ren.nextRenewalDate ? '<span class="drawer-tab-count">' + humanCountdown(ren.daysLeft) + '</span>' : '') +
+      '</button>';
+    html += '</div>';
+
+    // 3. Drawer Body
+    html += '<div class="drawer-body">';
+
+    if (activeTab === 'overview') {
+      // CARD 1: Next Step & Priority
+      html += '<div class="drawer-card" style="border-left: 4px solid var(' + TIER_VAR[sd.tier] + ');">';
+      html += '<div class="drawer-card-header">' +
+        '<div class="drawer-card-title"><span class="dot" style="background:var(' + TIER_VAR[sd.tier] + ');"></span>' + escapeHtml(sd.label) + ' — Next Step &amp; Action</div>' +
+        (r.actionDate ? '<span class="timeline-date-chip deadline-chip"><strong>Deadline:</strong> ' + fmtDate(r.actionDate) + ' (' + humanCountdown(daysUntil(r.actionDate)) + ')</span>' : '') +
+        '</div>';
+      html += '<p style="margin:0;font-size:13.5px;line-height:1.6;color:var(--ink);">' + escapeHtml(r.action || sd.suggestedAction || 'No pending statutory action recorded.') + '</p>';
+      html += '</div>';
+
+      // CARD 2: Goods & Services Description
+      html += '<div class="drawer-card">';
+      html += '<div class="drawer-card-header">' +
+        '<div class="drawer-card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' + escapeHtml(cfg.descLabel) + '</div>' +
+        '</div>';
+      html += '<div style="font-size:13px;line-height:1.6;color:var(--ink-secondary);white-space:pre-line;max-height:180px;overflow-y:auto;padding-right:6px;">' +
+        escapeHtml(r.desc || 'No specification / description entered.') +
+        '</div>';
+      html += '</div>';
+
+      // CARD 3: Core Parameters
+      html += '<div class="drawer-card">';
+      html += '<div class="drawer-card-header">' +
+        '<div class="drawer-card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Statutory Prosecution Parameters</div>' +
+        '</div>';
+      html += '<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(190px, 1fr));gap:12px;">';
+      if (cfg.markTypeMode !== 'hidden') {
+        html += '<div class="detail-param-item"><span class="detail-param-label">' + escapeHtml(cfg.markTypeLabel) + '</span><span class="detail-param-value">' + escapeHtml(r.markType || '—') + '</span></div>';
+      }
+      html += '<div class="detail-param-item"><span class="detail-param-label">Class</span><span class="detail-param-value mono">' + (r.cls != null && r.cls !== '' ? escapeHtml(r.cls) : '—') + '</span></div>';
+      html += '<div class="detail-param-item"><span class="detail-param-label">Statutory Application No.</span><span class="detail-param-value mono">' + escapeHtml(r.appno || 'Not yet filed') + '</span></div>';
+      html += '<div class="detail-param-item"><span class="detail-param-label">Filing Date</span><span class="detail-param-value">' + (fmtDate(r.filingDate) || '—') + '</span></div>';
+      if (r.priorityDate) {
+        html += '<div class="detail-param-item"><span class="detail-param-label">Convention Priority Date</span><span class="detail-param-value">' + fmtDate(r.priorityDate) + '</span></div>';
+      }
+      if (r.registrationDate) {
+        html += '<div class="detail-param-item"><span class="detail-param-label">Registration Date</span><span class="detail-param-value">' + fmtDate(r.registrationDate) + '</span></div>';
+      }
+      if (ren && ren.nextRenewalDate) {
+        html += '<div class="detail-param-item"><span class="detail-param-label">Next Renewal / Extension</span><span class="detail-param-value" style="color:var(--accent);font-weight:700;">' + fmtDate(ren.nextRenewalDate) + ' (' + humanCountdown(ren.daysLeft) + ')</span></div>';
+      }
+      html += '</div></div>';
+
+      // CARD 4: Applicants Roster
+      html += '<div class="drawer-card">';
+      html += '<div class="drawer-card-header">' +
+        '<div class="drawer-card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Applicants (' + ((r.applicants && r.applicants.length) || 0) + ')</div>' +
+        '</div>';
+      if (r.applicants && r.applicants.length) {
+        html += personSummaryLines(r.applicants, true);
+      } else {
+        html += '<p style="color:var(--ink-muted);font-size:13px;margin:0;">No applicant details entered.</p>';
+      }
+      html += '</div>';
+
+      // Authors & Contributors
+      if (cfg.hasAuthors && r.authors && r.authors.length) {
+        html += '<div class="drawer-card">';
+        html += '<div class="drawer-card-header">' +
+          '<div class="drawer-card-title">Author(s) / Creator(s) (' + r.authors.length + ')</div>' +
+          '</div>';
+        html += personSummaryLines(r.authors, false);
+        html += '</div>';
+      }
+      if (cfg.hasContributors && r.contributors && r.contributors.length) {
+        html += '<div class="drawer-card">';
+        html += '<div class="drawer-card-header">' +
+          '<div class="drawer-card-title">Internal Team / Drafters (' + r.contributors.length + ')</div>' +
+          '</div>';
+        html += contributorSummaryLines(r.contributors);
+        html += '</div>';
+      }
+
+      // Representation / Logo Preview
+      if (cfg.hasLogo && r.logoUrl) {
+        html += '<div class="drawer-card">';
+        html += '<div class="drawer-card-header"><div class="drawer-card-title">Device / Logo Representation</div></div>';
+        html += '<div style="display:flex;align-items:center;gap:16px;">' +
+          '<img src="' + escapeHtml(r.logoUrl) + '" alt="Device representation" style="max-height:140px;max-width:240px;border-radius:8px;border:1px solid var(--border);padding:4px;background:#fff;object-fit:contain;">' +
+          '<div style="font-size:12px;color:var(--ink-muted);">' +
+          'Official mark specimen on record.<br>' +
+          '<a href="' + escapeHtml(r.logoUrl) + '" target="_blank" rel="noopener" style="color:var(--accent);display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-weight:600;">Open full size specimen ↗</a>' +
+          '</div></div>';
+        html += '</div>';
+      }
+    } else if (activeTab === 'lifecycle') {
+      // TAB: LIFECYCLE & MILESTONES
+      html += '<div class="drawer-card">';
+      html += '<div class="drawer-card-header">' +
+        '<div class="drawer-card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Primary Workflow Milestones (' + timeline.length + ')</div>' +
+        '<div class="timeline-mode-toggle">' +
+        '<button type="button" class="timeline-mode-btn' + (viewMode === 'dual' ? ' active' : '') + '" data-action="toggle-timeline-view" data-record-id="' + r.id + '" data-mode="dual">Chronological</button>' +
+        '<button type="button" class="timeline-mode-btn' + (viewMode === 'unified' ? ' active' : '') + '" data-action="toggle-timeline-view" data-record-id="' + r.id + '" data-mode="unified">Unified with Forms</button>' +
+        '</div>' +
+        '</div>';
+
+      if (!timeline.length) {
+        html += '<div class="timeline-empty" style="padding:28px 16px;"><span style="font-size:22px;display:block;margin-bottom:8px;">⏳</span> No stage transitions recorded yet.<br>When matter prosecution moves forward (e.g., Objected, Hearing, Registered), milestones are preserved here.</div>';
+      } else {
+        html += '<div class="timeline-track" style="margin-top:12px;">';
+        timeline.forEach(function (entry) {
+          var fromSd = statusDef(entry.fromStatus);
+          var toSd = statusDef(entry.toStatus);
+          var markerTier = toSd.tier || 'info';
+          html += '<div class="timeline-item">';
+          html += '<div class="timeline-marker tier-' + markerTier + '"></div>';
+          html += '<div class="timeline-card">';
+          html += '<div class="timeline-card-header">';
+          html += '<div class="timeline-transition">';
+          html += '<span class="badge tier-' + fromSd.tier + '"><span class="dot"></span>' + escapeHtml(entry.fromStatusLabel || fromSd.label) + '</span>';
+          html += '<span class="timeline-arrow">➔</span>';
+          html += '<span class="badge tier-' + toSd.tier + '"><span class="dot"></span>' + escapeHtml(entry.toStatusLabel || toSd.label) + '</span>';
+          html += '</div>';
+          html += '<div class="timeline-meta mono" title="Recorded at ' + escapeHtml(entry.timestamp || '') + '">';
+          html += '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+          html += escapeHtml(fmtDateTime(entry.timestamp));
+          html += '</div></div>';
+
+          html += '<div class="timeline-dates">';
+          html += '<span class="timeline-date-chip"><strong>Effective:</strong> ' + (fmtDate(entry.effectiveDate) || escapeHtml(entry.effectiveDate) || '—') + '</span>';
+          if (entry.deadline) {
+            html += '<span class="timeline-date-chip deadline-chip"><strong>Deadline:</strong> ' + (fmtDate(entry.deadline) || escapeHtml(entry.deadline)) + '</span>';
+          }
+          html += '</div>';
+
+          if (entry.remarks) {
+            html += '<div class="timeline-remarks">' + escapeHtml(entry.remarks) + '</div>';
+          }
+          html += '</div></div>';
+        });
+        html += '</div>';
+      }
+      html += '</div>';
+    } else if (activeTab === 'forms') {
+      // TAB: STATUTORY FORMS
+      html += '<div class="drawer-card">';
+      html += '<div class="drawer-card-header">' +
+        '<div class="drawer-card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Statutory Forms &amp; Petitions (' + miscFilings.length + ')</div>' +
+        '<button type="button" class="btn btn-secondary btn-sm" data-action="open-misc-form" data-record-id="' + r.id + '">+ Log Statutory Form</button>' +
+        '</div>';
+
+      if (!miscFilings.length) {
+        html += '<div class="misc-empty" style="padding:32px 16px;">' +
+          '<div style="font-size:24px;margin-bottom:8px;">📋</div>' +
+          '<strong>No miscellaneous statutory forms logged for this matter.</strong><br>' +
+          'Track forms such as TM-M, TM-A, TM-O, Form-3, Form-4, or incidental petitions here with CBR numbers and official receipts.' +
+          '<div style="margin-top:14px;"><button type="button" class="btn btn-secondary btn-sm" data-action="open-misc-form" data-record-id="' + r.id + '">+ Log First Statutory Form</button></div>' +
+          '</div>';
+      } else {
+        html += '<div class="misc-list">';
+        miscFilings.forEach(function (f) {
+          var stObj = MISC_FORM_STATUSES.filter(function (s) { return s.key === f.status; })[0] || MISC_FORM_STATUSES[0];
+          html += '<div class="misc-card">';
+          html += '<div class="misc-card-top">';
+          html += '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">' +
+            '<span class="form-pill">' + escapeHtml(f.formNumber) + '</span>' +
+            '<span class="badge tier-' + stObj.tier + '"><span class="dot"></span>' + escapeHtml(f.status || 'Filed') + '</span>' +
+            (f.cbrNumber ? '<span class="cbr-tag">CBR: ' + escapeHtml(f.cbrNumber) + '</span>' : '') +
+            '</div>';
+          html += '<div class="misc-card-actions">' +
+            '<button type="button" class="btn-ghost" data-action="open-edit-misc-form" data-record-id="' + r.id + '" data-filing-id="' + f.id + '" title="Edit Form"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>' +
+            '<button type="button" class="btn-ghost" data-action="delete-misc-form" data-record-id="' + r.id + '" data-filing-id="' + f.id + '" title="Delete Form"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>' +
+            '</div></div>';
+
+          html += '<div class="misc-purpose">' + escapeHtml(f.purpose) + '</div>';
+          if (f.notes) {
+            html += '<div class="misc-notes">' + escapeHtml(f.notes) + '</div>';
+          }
+          html += '<div class="misc-card-footer">' +
+            '<span>Filed Date: <strong>' + (fmtDate(f.filingDate) || escapeHtml(f.filingDate) || '—') + '</strong></span>' +
+            '<span class="mono" title="Recorded at ' + escapeHtml(f.timestamp || '') + '">' + escapeHtml(fmtDateTime(f.timestamp)) + '</span>' +
+            '</div></div>';
+        });
+        html += '</div>';
+      }
+      html += '</div>';
+    } else if (activeTab === 'renewal') {
+      // TAB: RENEWAL & DEADLINES
+      html += '<div class="drawer-card">';
+      html += '<div class="drawer-card-header">' +
+        '<div class="drawer-card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Statutory Renewal &amp; Term Lifecycle</div>' +
+        '</div>';
+
+      if (ren && ren.nextRenewalDate) {
+        html += '<div class="statutory-callout" style="margin-bottom:16px;">' +
+          '<div class="statutory-callout-info">' +
+          '<div class="statutory-callout-title">' +
+          '<span>Statutory Next Renewal / Extension: <strong>' + fmtDate(ren.nextRenewalDate) + '</strong> (' + humanCountdown(ren.daysLeft) + ')</span>' +
+          renderRenewalBadge(ren) +
+          '</div>' +
+          '<div class="statutory-callout-sub">' + escapeHtml(ren.sublabel) + '</div>' +
+          '<div class="statutory-callout-meta">' +
+          'Statutory Base: ' + (ren.isRenewalCycle ? 'Last Renewal Date (' + fmtDate(ren.baseDate) + ')' : (r.priorityDate ? 'Priority Date (' + fmtDate(r.priorityDate) + ')' : (r.filingDate ? 'Application Date (' + fmtDate(r.filingDate) + ')' : (r.registrationDate ? 'Registration Date (' + fmtDate(r.registrationDate) + ')' : 'Reference Date (' + fmtDate(ren.baseDate) + ')')))) +
+          (r.ipType === 'design' ? (ren.isExtended ? ' &bull; 5-Year Extension (Form-3) Active' : ' &bull; Initial 10-Year Term') : '') +
+          '</div>' +
+          '</div>' +
+          '<div class="statutory-callout-actions">';
+
+        if (r.ipType === 'trademark') {
+          html += '<button type="button" class="btn btn-secondary btn-sm" data-action="open-misc-form" data-record-id="' + r.id + '" data-form-prefill="TM-R">+ Log Renewal (TM-R)</button>';
+        } else if (r.ipType === 'design') {
+          if (ren.canExtend || ren.phase === 'upcoming') {
+            html += '<button type="button" class="btn btn-secondary btn-sm" data-action="open-misc-form" data-record-id="' + r.id + '" data-form-prefill="Form-3">+ Log Form-3 Extension</button>';
+          } else if (ren.canRestore || ren.phase === 'restoration') {
+            html += '<button type="button" class="btn btn-secondary btn-sm" data-action="open-misc-form" data-record-id="' + r.id + '" data-form-prefill="Form-4">+ Log Form-4 Restoration</button>';
+          }
+        }
+        html += '</div></div>';
+      }
+
+      html += '<div style="background:var(--surface-2);border-radius:8px;padding:14px;border:1px solid var(--border);font-size:12.5px;color:var(--ink-secondary);line-height:1.6;">';
+      if (r.ipType === 'trademark') {
+        html += '<strong>Indian Trade Marks Act, 1999 statutory renewal rules:</strong><br>' +
+          '• Registration is valid for 10 years from the statutory application filing date.<br>' +
+          '• Renewal application (Form TM-R) can be filed up to 1 year prior to expiration.<br>' +
+          '• Grace period: 6 months after expiry with prescribed surcharge fee.<br>' +
+          '• Restoration: within 1 year from expiration upon petition with reason for non-renewal.';
+      } else if (r.ipType === 'design') {
+        html += '<strong>Indian Designs Act, 2000 statutory extension rules:</strong><br>' +
+          '• Initial copyright in design lasts for 10 years from registration/priority date.<br>' +
+          '• Extendable for a single second period of 5 years via Form-3 before the expiry of the initial 10-year term.<br>' +
+          '• Restoration (Form-4): within 1 year from cessation if unpaid due to inadvertence.';
+      } else {
+        html += '<strong>Indian Copyright Act, 1957 protection term:</strong><br>' +
+          '• Published literary, dramatic, musical and artistic works: lifetime of author + 60 years.<br>' +
+          '• Cinematograph films, sound recordings, photographs, government works: 60 years from publication.<br>' +
+          '• No recurring renewal filing required during statutory term.';
+      }
+      html += '</div>';
+      html += '</div>';
+    }
+
+    html += '</div>'; // drawer-body
+
+    // 4. Drawer Footer
+    html += '<div style="padding:12px 24px;border-top:1px solid var(--border);background:var(--surface-2);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">' +
+      '<div class="mono" style="font-size:12px;color:var(--ink-muted);">' + escapeHtml(r.code || 'ID: ' + r.id) + '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+      '<button type="button" class="btn btn-secondary btn-sm" data-action="open-misc-form" data-record-id="' + r.id + '">+ Log Statutory Form</button>' +
+      '<button type="button" class="btn btn-secondary btn-sm" data-action="close-drawer">Close</button>' +
+      '</div></div>';
+
+    html += '</div>'; // slide-over-drawer
+    html += '</div>'; // slide-over-backdrop
     return html;
   }
 
